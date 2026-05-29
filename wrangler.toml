@@ -1,0 +1,21 @@
+name = "smartclass-analytics"
+main = "backend/api.js"
+compatibility_date = "2026-01-01"
+
+# D1 Database
+[[d1_databases]]
+binding = "DB"
+database_name = "smartclass-db"
+database_id = "YOUR_DATABASE_ID_HERE"
+
+# Environment variables
+[vars]
+JWT_SECRET = "smartclass-secret-key-2026-change-this"
+
+# Assets - serve static files
+[assets]
+directory = "."
+binding = "ASSETS"
+
+# Enable Node.js compatibility
+compatibility_flags = ["nodejs_compat"]
