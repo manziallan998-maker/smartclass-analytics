@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classes - SmartClass Analytics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .class-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px 24px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .class-card:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
+        }
+        .class-card.selected {
+            border-color: var(--accent-primary);
+            background: rgba(255, 102, 0, 0.1);
+        }
+        .action-btn {
+            padding: 10px 16px;
+            background: var(--bg-hover);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .action-btn:hover {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+        }
+        .students-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .students-table th, .students-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        .students-table th {
+            background: var(--bg-secondary);
+            color: var(--accent-primary);
+        }
+        .students-table tr:hover {
+            background: var(--bg-hover);
+        }
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .status-excellent { background: #10B981; color: white; }
+        .status-good { background: #3B82F6; color: white; }
+        .status-fail { background: #EF4444; color: white; }
+        .icon-btn {
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            cursor: pointer;
+            padding: 4px 8px;
+            font-size: 16px;
+        }
+        .icon-btn:hover { color: var(--accent-primary); }
+        .icon-btn.danger:hover { color: #EF4444; }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 20px;
+        }
+        .page-btn {
+            padding: 8px 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .page-btn.active {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo"><i class="fas fa-chalkboard-user"></i><span>SMARTCLASS</span></div>
+            <button class="close-sidebar" id="closeSidebar"><i class="fas fa-times"></i></button>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i><span>Dashboard</span></a>
+            <a href="classes.html" class="nav-item active"><i class="fas fa-book"></i><span>Classes</span></a>
+            <a href="groups.html" class="nav-item"><i class="fas fa-users"></i><span>Smart Groups</span></a>
+            <a href="analytics.html" class="nav-item"><i class="fas fa-chart-line"></i><span>Analytics</span></a>
+            <a href="predict.html" class="nav-item"><i class="fas fa-brain"></i><span>Predict</span></a>
+            <a href="lesson-planner.html" class="nav-item"><i class="fas fa-calendar-alt"></i><span>Lesson Planner</span></a>
+            <a href="timetable.html" class="nav-item"><i class="fas fa-clock"></i><span>Timetable</span></a>
+            <a href="reports.html" class="nav-item"><i class="fas fa-file-alt"></i><span>Reports</span></a>
+            <a href="compete.html" class="nav-item"><i class="fas fa-trophy"></i><span>Compete</span></a>
+            <a href="backup.html" class="nav-item"><i class="fas fa-database"></i><span>Backup</span></a>
+            <a href="settings.html" class="nav-item"><i class="fas fa-cog"></i><span>Settings</span></a>
+            <a href="help.html" class="nav-item"><i class="fas fa-question-circle"></i><span>Help</span></a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="teacher-info">
+                <div class="avatar"><i class="fas fa-user"></i></div>
+                <div class="info"><p class="name" id="teacherName">Teacher</p><p class="email" id="teacherEmail">teacher@school.rw</p></div>
+            </div>
+            <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i><span>Logout</span></button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="top-header">
+            <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+            <div class="header-title"><h1>Classes Management</h1><p>Manage your classes, students, and marks</p></div>
+            <div class="header-actions">
+                <div class="notifications-wrapper">
+                    <button class="notifications-btn" id="notificationsBtn"><i class="fas fa-bell"></i><span class="badge">3</span></button>
+                    <div class="notifications-dropdown" id="notificationsDropdown">...</div>
+                </div>
+                <div class="theme-toggle"><button id="themeToggle"><i class="fas fa-moon"></i></button></div>
+            </div>
+        </header>
+
+        <div class="section">
+            <div class="section-header">
+                <h2>My Classes</h2>
+                <button class="btn-primary" id="newClassBtn"><i class="fas fa-plus"></i> New Class</button>
+            </div>
+            <div id="classesList" class="class-list" style="display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 24px;"></div>
+        </div>
+
+        <div id="classDetails" style="display: none;">
+            <div class="section">
+                <div class="section-header">
+                    <h2 id="currentClassName">Students</h2>
+                    <div class="section-actions">
+                        <input type="text" id="studentSearch" placeholder="Search student..." class="search-input">
+                        <button class="btn-secondary" id="exportStudentsBtn"><i class="fas fa-download"></i> Export</button>
+                    </div>
+                </div>
+                
+                <div class="action-buttons" style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px;">
+                    <button class="action-btn" id="showBestBtn"><i class="fas fa-trophy"></i> Best Performers</button>
+                    <button class="action-btn" id="showLowBtn"><i class="fas fa-exclamation-triangle"></i> Low Performers</button>
+                    <button class="action-btn" id="showFailBtn"><i class="fas fa-times-circle"></i> Failing</button>
+                    <button class="action-btn" id="showStatsBtn"><i class="fas fa-chart-bar"></i> Class Stats</button>
+                    <button class="action-btn" id="addMarksBtn"><i class="fas fa-pen"></i> Add Marks</button>
+                    <button class="action-btn" id="addStudentBtn"><i class="fas fa-user-plus"></i> Add Student</button>
+                    <button class="action-btn" id="uploadListBtn"><i class="fas fa-upload"></i> Upload List</button>
+                    <button class="action-btn" id="deleteClassBtn"><i class="fas fa-trash"></i> Delete Class</button>
+                </div>
+
+                <div class="table-container">
+                    <table class="students-table" id="studentsTable">
+                        <thead>
+                            <tr><th>ID</th><th>Student Name</th><th>Term 1</th><th>Term 2</th><th>Term 3</th><th>Average</th><th>Status</th><th>Actions</th></tr>
+                        </thead>
+                        <tbody id="studentsTableBody"></tbody>
+                    </table>
+                </div>
+                <div id="pagination" class="pagination"></div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- New Class Modal -->
+<div class="modal" id="newClassModal">
+    <div class="modal-content">
+        <div class="modal-header"><h3>Create New Class</h3><button class="close-modal" onclick="closeModal('newClassModal')">&times;</button></div>
+        <form id="newClassForm">
+            <div class="form-group"><label>Class Name</label><input type="text" id="className" placeholder="e.g., Physics S4A" required></div>
+            <div class="form-group"><label>Academic Year</label><input type="text" id="academicYear" value="2026"></div>
+            <div class="form-group"><label>Term</label><select id="classTerm"><option value="1">Term 1</option><option value="2">Term 2</option><option value="3" selected>Term 3</option></select></div>
+            <button type="submit" class="btn-primary">Create Class</button>
+        </form>
+    </div>
+</div>
+
+<!-- Add Student Modal -->
+<div class="modal" id="addStudentModal">
+    <div class="modal-content">
+        <div class="modal-header"><h3>Add Student</h3><button class="close-modal" onclick="closeModal('addStudentModal')">&times;</button></div>
+        <form id="addStudentForm">
+            <div class="form-group"><label>Student Name</label><input type="text" id="studentName" required></div>
+            <div class="form-group"><label>Registration Number</label><input type="text" id="studentReg"></div>
+            <div class="form-group"><label>Parent Phone</label><input type="text" id="studentPhone"></div>
+            <button type="submit" class="btn-primary">Add Student</button>
+        </form>
+    </div>
+</div>
+
+<!-- Add Marks Modal -->
+<div class="modal" id="addMarksModal">
+    <div class="modal-content">
+        <div class="modal-header"><h3>Enter Marks for <span id="marksStudentName"></span></h3><button class="close-modal" onclick="closeModal('addMarksModal')">&times;</button></div>
+        <form id="addMarksForm">
+            <input type="hidden" id="marksStudentId">
+            <div class="form-group"><label>Term 1 Score (%)</label><input type="number" id="term1" min="0" max="100"></div>
+            <div class="form-group"><label>Term 2 Score (%)</label><input type="number" id="term2" min="0" max="100"></div>
+            <div class="form-group"><label>Term 3 Score (%)</label><input type="number" id="term3" min="0" max="100"></div>
+            <button type="submit" class="btn-primary">Save Marks</button>
+        </form>
+    </div>
+</div>
+
+<!-- Class Stats Modal -->
+<div class="modal" id="statsModal">
+    <div class="modal-content">
+        <div class="modal-header"><h3>Class Statistics - <span id="statsClassName"></span></h3><button class="close-modal" onclick="closeModal('statsModal')">&times;</button></div>
+        <div id="statsContent"></div>
+        <button class="btn-primary" onclick="closeModal('statsModal')">Close</button>
+    </div>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/theme.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/app.js"></script>
+<script>
+    let currentClassId = null;
+    let currentStudents = [];
+    let currentPage = 1;
+    const itemsPerPage = 10;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadClasses();
+        setupEventListeners();
+    });
+
+    function setupEventListeners() {
+        document.getElementById('newClassBtn')?.addEventListener('click', () => openModal('newClassModal'));
+        document.getElementById('newClassForm')?.addEventListener('submit', createClass);
+        document.getElementById('addStudentForm')?.addEventListener('submit', addStudent);
+        document.getElementById('addMarksForm')?.addEventListener('submit', saveMarks);
+        document.getElementById('showBestBtn')?.addEventListener('click', () => filterStudents('best'));
+        document.getElementById('showLowBtn')?.addEventListener('click', () => filterStudents('low'));
+        document.getElementById('showFailBtn')?.addEventListener('click', () => filterStudents('fail'));
+        document.getElementById('showStatsBtn')?.addEventListener('click', showClassStats);
+        document.getElementById('deleteClassBtn')?.addEventListener('click', deleteCurrentClass);
+        document.getElementById('uploadListBtn')?.addEventListener('click', uploadStudentList);
+        document.getElementById('studentSearch')?.addEventListener('input', (e) => searchStudents(e.target.value));
+        document.getElementById('exportStudentsBtn')?.addEventListener('click', exportToExcel);
+    }
+
+    function loadClasses() {
+        const classes = storage.getClasses();
+        const container = document.getElementById('classesList');
+        container.innerHTML = classes.map(cls => `
+            <div class="class-card" data-id="${cls.id}">
+                <strong>${cls.name}</strong>
+                <small style="display: block; color: var(--text-dim);">${cls.studentCount || 0} students | Avg: ${cls.average || 0}%</small>
+            </div>
+        `).join('');
+        
+        document.querySelectorAll('.class-card').forEach(card => {
+            card.addEventListener('click', () => selectClass(card.dataset.id));
+        });
+    }
+
+    function selectClass(classId) {
+        currentClassId = classId;
+        document.getElementById('classDetails').style.display = 'block';
+        const classData = storage.getClasses().find(c => c.id === classId);
+        document.getElementById('currentClassName').textContent = `${classData.name} - Students`;
+        loadStudents(classId);
+    }
+
+    function loadStudents(classId) {
+        currentStudents = storage.getStudents(classId);
+        renderStudents();
+    }
+
+    function renderStudents() {
+        const tbody = document.getElementById('studentsTableBody');
+        const start = (currentPage - 1) * itemsPerPage;
+        const paginated = currentStudents.slice(start, start + itemsPerPage);
+        
+        tbody.innerHTML = paginated.map((student, idx) => {
+            const avg = ((student.term1 || 0) + (student.term2 || 0) + (student.term3 || 0)) / 3;
+            const status = avg >= 80 ? 'Excellent' : avg >= 50 ? 'Good' : 'Failing';
+            const statusClass = status === 'Excellent' ? 'status-excellent' : status === 'Good' ? 'status-good' : 'status-fail';
+            
+            return `
+                <tr>
+                    <td>${start + idx + 1}</td>
+                    <td>${student.name}</td>
+                    <td>${student.term1 || '-'}%</td>
+                    <td>${student.term2 || '-'}%</td>
+                    <td>${student.term3 || '-'}%</td>
+                    <td><strong>${avg.toFixed(1)}%</strong></td>
+                    <td><span class="status-badge ${statusClass}">${status}</span></td>
+                    <td>
+                        <button class="icon-btn" onclick="openMarksModal('${student.id}', '${student.name}')"><i class="fas fa-edit"></i></button>
+                        <button class="icon-btn danger" onclick="deleteStudent('${student.id}')"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+        
+        renderPagination();
+    }
+
+    function renderPagination() {
+        const totalPages = Math.ceil(currentStudents.length / itemsPerPage);
+        const container = document.getElementById('pagination');
+        if (totalPages <= 1) {
+            container.innerHTML = '';
+            return;
+        }
+        
+        let html = '';
+        for (let i = 1; i <= totalPages; i++) {
+            html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+        }
+        container.innerHTML = html;
+    }
+
+    function goToPage(page) {
+        currentPage = page;
+        renderStudents();
+    }
+
+    function filterStudents(type) {
+        let filtered = [...currentStudents];
+        if (type === 'best') {
+            filtered = filtered.filter(s => ((s.term1||0)+(s.term2||0)+(s.term3||0))/3 >= 80);
+        } else if (type === 'low') {
+            filtered = filtered.filter(s => ((s.term1||0)+(s.term2||0)+(s.term3||0))/3 < 50);
+        } else if (type === 'fail') {
+            filtered = filtered.filter(s => ((s.term1||0)+(s.term2||0)+(s.term3||0))/3 < 50);
+        }
+        currentStudents = filtered;
+        currentPage = 1;
+        renderStudents();
+        setTimeout(() => {
+            currentStudents = storage.getStudents(currentClassId);
+            renderStudents();
+        }, 3000);
+    }
+
+    function searchStudents(query) {
+        if (!query) {
+            currentStudents = storage.getStudents(currentClassId);
+        } else {
+            currentStudents = storage.getStudents(currentClassId).filter(s => 
+                s.name.toLowerCase().includes(query.toLowerCase())
+            );
+        }
+        currentPage = 1;
+        renderStudents();
+    }
+
+    async function createClass(e) {
+        e.preventDefault();
+        const name = document.getElementById('className').value;
+        const academicYear = document.getElementById('academicYear').value;
+        const term = parseInt(document.getElementById('classTerm').value);
+        
+        const newClass = storage.saveClass({ name, academicYear, term, studentCount: 0, average: 0 });
+        closeModal('newClassModal');
+        loadClasses();
+        showToast('Class created successfully', 'success');
+        document.getElementById('newClassForm').reset();
+    }
+
+    async function addStudent(e) {
+        e.preventDefault();
+        const name = document.getElementById('studentName').value;
+        const registration_number = document.getElementById('studentReg').value;
+        const parent_phone = document.getElementById('studentPhone').value;
+        
+        storage.saveStudent({ classId: currentClassId, name, registration_number, parent_phone });
+        closeModal('addStudentModal');
+        loadStudents(currentClassId);
+        showToast('Student added successfully', 'success');
+        document.getElementById('addStudentForm').reset();
+    }
+
+    function openMarksModal(studentId, studentName) {
+        const student = storage.getStudents().find(s => s.id === studentId);
+        document.getElementById('marksStudentId').value = studentId;
+        document.getElementById('marksStudentName').textContent = studentName;
+        document.getElementById('term1').value = student.term1 || '';
+        document.getElementById('term2').value = student.term2 || '';
+        document.getElementById('term3').value = student.term3 || '';
+        openModal('addMarksModal');
+    }
+
+    function saveMarks(e) {
+        e.preventDefault();
+        const studentId = document.getElementById('marksStudentId').value;
+        const term1 = parseInt(document.getElementById('term1').value) || 0;
+        const term2 = parseInt(document.getElementById('term2').value) || 0;
+        const term3 = parseInt(document.getElementById('term3').value) || 0;
+        
+        storage.updateMarks(studentId, term1, term2, term3);
+        closeModal('addMarksModal');
+        loadStudents(currentClassId);
+        showToast('Marks saved successfully', 'success');
+    }
+
+    function showClassStats() {
+        const students = storage.getStudents(currentClassId);
+        const classData = storage.getClasses().find(c => c.id === currentClassId);
+        const avg = students.reduce((a,b) => a + ((b.term1||0)+(b.term2||0)+(b.term3||0))/3, 0) / students.length;
+        const best = [...students].sort((a,b) => ((b.term3||0) - (a.term3||0)))[0];
+        
+        document.getElementById('statsClassName').textContent = classData.name;
+        document.getElementById('statsContent').innerHTML = `
+            <div class="stats-grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div><h4>Class Average</h4><p style="font-size: 32px; color: var(--accent-primary);">${avg.toFixed(1)}%</p></div>
+                <div><h4>Total Students</h4><p style="font-size: 32px;">${students.length}</p></div>
+                <div><h4>Top Student</h4><p>${best ? best.name : 'N/A'} (${best ? best.term3 : 0}%)</p></div>
+                <div><h4>Passing Rate</h4><p>${students.filter(s => (s.term3||0) >= 50).length / students.length * 100 || 0}%</p></div>
+            </div>
+        `;
+        openModal('statsModal');
+    }
+
+    function deleteCurrentClass() {
+        if (!confirm('Delete this class? This will delete all students and marks!')) return;
+        storage.deleteClass(currentClassId);
+        document.getElementById('classDetails').style.display = 'none';
+        loadClasses();
+        showToast('Class deleted', 'warning');
+    }
+
+    function uploadStudentList() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.csv,.xlsx';
+        input.onchange = async (e) => {
+            const file = e.target.files[0];
+            showToast('Upload feature coming soon', 'info');
+        };
+        input.click();
+    }
+
+    function deleteStudent(studentId) {
+        if (!confirm('Delete this student?')) return;
+        storage.deleteStudent(studentId);
+        loadStudents(currentClassId);
+        showToast('Student deleted', 'warning');
+    }
+
+    function exportToExcel() {
+        let csv = "Student Name,Term 1,Term 2,Term 3,Average,Status\n";
+        currentStudents.forEach(s => {
+            const avg = ((s.term1||0)+(s.term2||0)+(s.term3||0))/3;
+            const status = avg >= 80 ? 'Excellent' : avg >= 50 ? 'Good' : 'Failing';
+            csv += `"${s.name}",${s.term1||0},${s.term2||0},${s.term3||0},${avg.toFixed(1)},${status}\n`;
+        });
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `students_${currentClassId}.csv`;
+        link.click();
+        showToast('Exported to CSV', 'success');
+    }
+
+    function openModal(id) { document.getElementById(id).classList.add('active'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+    function showToast(msg, type) {
+        const toast = document.createElement('div');
+        toast.style.cssText = `position:fixed; bottom:20px; right:20px; background:${type === 'success' ? '#10B981' : type === 'error' ? '#EF4444' : '#FF6600'}; color:white; padding:12px 20px; border-radius:8px; z-index:1000;`;
+        toast.textContent = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    window.openMarksModal = openMarksModal;
+    window.deleteStudent = deleteStudent;
+    window.goToPage = goToPage;
+    window.closeModal = closeModal;
+</script>
+</body>
+</html>
