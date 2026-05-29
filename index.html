@@ -24,7 +24,6 @@
             overflow-x: hidden;
         }
 
-        /* Animated background */
         .bg-animation {
             position: fixed;
             top: 0;
@@ -57,7 +56,6 @@
             100% { transform: translate(50px, 50px); }
         }
 
-        /* Login Container */
         .login-container {
             background: rgba(10, 10, 10, 0.95);
             backdrop-filter: blur(10px);
@@ -248,7 +246,7 @@
     </div>
 
     <!-- Login Form -->
-    <form id="loginForm" class="active-form">
+    <form id="loginForm">
         <div id="loginError" class="error-message hidden"></div>
         <div class="form-group">
             <label>Email Address</label>
@@ -324,7 +322,7 @@
 </div>
 
 <script>
-    // Tab switching
+    // ==================== TAB SWITCHING ====================
     const tabs = document.querySelectorAll('.tab');
     const loginForm = document.getElementById('loginForm');
     const signupForm = document.getElementById('signupForm');
@@ -344,12 +342,28 @@
         });
     });
 
-    // API URLs - works both locally and on Cloudflare
-    const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-        ? 'http://localhost:8787'
-        : 'https://smartclass-analytics.workers.dev';
+    // ==================== API URL ====================
+    // Auto-detect environment - works on localhost, Netlify, Cloudflare
+    const API_URL = (() => {
+        // Netlify Functions
+        if (window.location.hostname.includes('netlify.app')) {
+            return '/.netlify/functions/api';
+        }
+        // Cloudflare Workers
+        if (window.location.hostname.includes('workers.dev')) {
+            return 'https://smartclass-analytics.workers.dev/api';
+        }
+        // Local development
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            return 'http://localhost:8888/.netlify/functions/api';
+        }
+        // Production fallback
+        return '/.netlify/functions/api';
+    })();
 
-    // SIGNUP FUNCTION
+    console.log('API URL:', API_URL);
+
+    // ==================== SIGNUP FUNCTION ====================
     document.getElementById('signupForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         
@@ -363,21 +377,19 @@
         const password = document.getElementById('password').value;
         const confirmPassword = document.getElementById('confirmPassword').value;
         
+        // Validation
         if (!fullname || !email || !school || !subject || !password) {
-            document.getElementById('signupError').textContent = 'All fields are required';
-            document.getElementById('signupError').classList.remove('hidden');
+            showError('signupError', 'All fields are required');
             return;
         }
         
         if (password !== confirmPassword) {
-            document.getElementById('signupError').textContent = 'Passwords do not match';
-            document.getElementById('signupError').classList.remove('hidden');
+            showError('signupError', 'Passwords do not match');
             return;
         }
         
         if (password.length < 6) {
-            document.getElementById('signupError').textContent = 'Password must be at least 6 characters';
-            document.getElementById('signupError').classList.remove('hidden');
+            showError('signupError', 'Password must be at least 6 characters');
             return;
         }
         
@@ -387,7 +399,7 @@
         submitBtn.disabled = true;
         
         try {
-            const response = await fetch(`${API_URL}/api/signup`, {
+            const response = await fetch(`${API_URL}/signup`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ fullname, email, school, subject, password })
@@ -399,6 +411,7 @@
                 document.getElementById('signupSuccess').textContent = 'Account created successfully! Please login.';
                 document.getElementById('signupSuccess').classList.remove('hidden');
                 
+                // Clear form
                 document.getElementById('fullname').value = '';
                 document.getElementById('email').value = '';
                 document.getElementById('school').value = '';
@@ -406,24 +419,23 @@
                 document.getElementById('password').value = '';
                 document.getElementById('confirmPassword').value = '';
                 
+                // Switch to login tab after 2 seconds
                 setTimeout(() => {
                     document.querySelector('.tab[data-tab="login"]').click();
                 }, 2000);
             } else {
-                document.getElementById('signupError').textContent = data.message || 'Signup failed';
-                document.getElementById('signupError').classList.remove('hidden');
+                showError('signupError', data.message || 'Signup failed');
             }
         } catch (error) {
             console.error('Signup error:', error);
-            document.getElementById('signupError').textContent = 'Connection error. Please try again.';
-            document.getElementById('signupError').classList.remove('hidden');
+            showError('signupError', 'Connection error. Please try again.');
         } finally {
             submitBtn.innerHTML = originalText;
             submitBtn.disabled = false;
         }
     });
 
-    // LOGIN FUNCTION
+    // ==================== LOGIN FUNCTION ====================
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         
@@ -433,8 +445,7 @@
         const password = document.getElementById('loginPassword').value;
         
         if (!email || !password) {
-            document.getElementById('loginError').textContent = 'Email and password required';
-            document.getElementById('loginError').classList.remove('hidden');
+            showError('loginError', 'Email and password required');
             return;
         }
         
@@ -444,7 +455,7 @@
         submitBtn.disabled = true;
         
         try {
-            const response = await fetch(`${API_URL}/api/login`, {
+            const response = await fetch(`${API_URL}/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
@@ -458,18 +469,24 @@
                 localStorage.setItem('teacherEmail', email);
                 window.location.href = 'dashboard.html';
             } else {
-                document.getElementById('loginError').textContent = data.message || 'Invalid credentials';
-                document.getElementById('loginError').classList.remove('hidden');
+                showError('loginError', data.message || 'Invalid credentials');
             }
         } catch (error) {
             console.error('Login error:', error);
-            document.getElementById('loginError').textContent = 'Connection error. Please try again.';
-            document.getElementById('loginError').classList.remove('hidden');
+            showError('loginError', 'Connection error. Please try again.');
         } finally {
             submitBtn.innerHTML = originalText;
             submitBtn.disabled = false;
         }
     });
+
+    // Helper functions
+    function showError(elementId, message) {
+        const errorDiv = document.getElementById(elementId);
+        errorDiv.textContent = message;
+        errorDiv.classList.remove('hidden');
+        setTimeout(() => errorDiv.classList.add('hidden'), 3000);
+    }
 </script>
 </body>
 </html>
