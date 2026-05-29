@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lesson Planner - SmartClass Analytics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .upload-area {
+            background: var(--bg-card);
+            border: 2px dashed var(--border);
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 24px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .upload-area:hover { border-color: var(--accent-primary); background: var(--bg-hover); }
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--bg-card);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        .schedule-table th, .schedule-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        .schedule-table th { background: var(--bg-secondary); color: var(--accent-primary); }
+        .current-lesson {
+            background: linear-gradient(135deg, rgba(255,102,0,0.2), var(--bg-card));
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+        .time-remaining { font-size: 48px; font-weight: 700; color: var(--accent-primary); margin: 16px 0; }
+        .progress-tracker { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; margin: 16px 0; }
+        .progress-fill { height: 100%; background: #10B981; transition: width 1s linear; }
+        .day-tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+        .day-tab {
+            padding: 8px 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        .day-tab.active { background: var(--accent-primary); border-color: var(--accent-primary); }
+        .reminder-popup {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--bg-card);
+            border-left: 4px solid #F59E0B;
+            border-radius: 12px;
+            padding: 16px 20px;
+            max-width: 350px;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <aside class="sidebar" id="sidebar">[... same sidebar ...]</aside>
+
+    <main class="main-content">
+        <header class="top-header">[... same header ...]</header>
+
+        <div class="section">
+            <div class="section-header">
+                <h2><i class="fas fa-calendar-alt"></i> Smart Lesson Planner</h2>
+                <button class="btn-secondary" id="viewFullSchedule"><i class="fas fa-table"></i> View Full Schedule</button>
+            </div>
+
+            <div class="upload-area" id="uploadArea">
+                <i class="fas fa-cloud-upload-alt" style="font-size: 48px; color: var(--accent-primary); margin-bottom: 16px;"></i>
+                <h3>Upload Lesson Plan File</h3>
+                <p style="color: var(--text-dim);">Supported formats: Excel (.xlsx, .xls), CSV</p>
+                <p style="color: var(--text-dim); font-size: 12px; margin-top: 8px;">Format: Class, Day, Start Time, Duration (minutes)</p>
+                <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" style="display: none;">
+                <button class="btn-primary" id="selectFileBtn" style="margin-top: 16px;">Select File</button>
+            </div>
+
+            <div id="currentLessonContainer"></div>
+
+            <div class="day-tabs" id="dayTabs">
+                <button class="day-tab active" data-day="Monday">Monday</button>
+                <button class="day-tab" data-day="Tuesday">Tuesday</button>
+                <button class="day-tab" data-day="Wednesday">Wednesday</button>
+                <button class="day-tab" data-day="Thursday">Thursday</button>
+                <button class="day-tab" data-day="Friday">Friday</button>
+            </div>
+
+            <div class="schedule-wrapper">
+                <table class="schedule-table" id="scheduleTable">
+                    <thead><tr><th>Time</th><th>Class</th><th>Duration</th><th>Status</th><th>Remaining</th></tr></thead>
+                    <tbody id="scheduleBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div class="modal" id="fullScheduleModal">
+    <div class="modal-content" style="max-width: 900px;">
+        <div class="modal-header"><h3>Full Weekly Schedule</h3><button class="close-modal" onclick="closeModal('fullScheduleModal')">&times;</button></div>
+        <div id="fullScheduleContent"></div>
+    </div>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/theme.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/app.js"></script>
+<script>
+    let lessonPlans = [];
+    let currentDay = 'Monday';
+    let countdownInterval = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        setupEventListeners();
+        loadLessonPlans();
+    });
+
+    function setupEventListeners() {
+        document.getElementById('selectFileBtn')?.addEventListener('click', () => document.getElementById('fileInput').click());
+        document.getElementById('fileInput')?.addEventListener('change', handleFileUpload);
+        document.getElementById('viewFullSchedule')?.addEventListener('click', () => openModal('fullScheduleModal'));
+        
+        document.querySelectorAll('.day-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.day-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentDay = tab.dataset.day;
+                displaySchedule();
+            });
+        });
+    }
+
+    function loadLessonPlans() {
+        lessonPlans = storage.getLessonPlans();
+        if (lessonPlans.length === 0) {
+            lessonPlans = [
+                { id: '1', classId: 'cls1', className: 'Physics S4A', day: 'Monday', startTime: '08:00', duration: 60 },
+                { id: '2', classId: 'cls2', className: 'Physics S3B', day: 'Monday', startTime: '10:00', duration: 60 },
+                { id: '3', classId: 'cls1', className: 'Physics S4A', day: 'Tuesday', startTime: '08:00', duration: 60 },
+                { id: '4', classId: 'cls4', className: 'Physics S2A', day: 'Wednesday', startTime: '14:00', duration: 60 },
+                { id: '5', classId: 'cls3', className: 'Physics S3A', day: 'Thursday', startTime: '09:00', duration: 60 },
+                { id: '6', classId: 'cls1', className: 'Physics S4A', day: 'Friday', startTime: '08:00', duration: 60 },
+                { id: '7', classId: 'cls5', className: 'Physics S2B', day: 'Friday', startTime: '10:00', duration: 60 }
+            ];
+        }
+        displaySchedule();
+        updateCurrentLesson();
+    }
+
+    function displaySchedule() {
+        const filtered = lessonPlans.filter(p => p.day === currentDay);
+        filtered.sort((a,b) => a.startTime.localeCompare(b.startTime));
+        
+        const tbody = document.getElementById('scheduleBody');
+        const now = new Date();
+        const currentTime = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+        
+        tbody.innerHTML = filtered.map(lesson => {
+            const isCurrent = isCurrentLesson(lesson);
+            const remaining = getTimeRemaining(lesson);
+            let status = '⏳ Upcoming';
+            let statusColor = '#F59E0B';
+            
+            if (isCurrent) {
+                status = '🟢 IN PROGRESS';
+                statusColor = '#10B981';
+            } else if (lesson.startTime < currentTime) {
+                status = '✅ Completed';
+                statusColor = 'var(--text-dim)';
+            }
+            
+            return `
+                <tr style="${isCurrent ? 'background: rgba(255,102,0,0.1);' : ''}">
+                    <td><strong>${lesson.startTime}</strong></td>
+                    <td>${lesson.className}</td>
+                    <td>${lesson.duration} min</td>
+                    <td style="color: ${statusColor};">${status}</td>
+                    <td>${isCurrent ? remaining : (lesson.startTime > currentTime ? 'Not started' : 'Finished')}</td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function updateCurrentLesson() {
+        const container = document.getElementById('currentLessonContainer');
+        const current = findCurrentLesson();
+        
+        if (!current) {
+            container.innerHTML = `<div class="current-lesson"><h3><i class="fas fa-clock"></i> No Active Lesson</h3><p>Next lesson: ${getNextLesson() || 'No lessons scheduled for today'}</p></div>`;
+            if (countdownInterval) clearInterval(countdownInterval);
+            return;
+        }
+        
+        const endTime = calculateEndTime(current.startTime, current.duration);
+        
+        container.innerHTML = `
+            <div class="current-lesson">
+                <h3><i class="fas fa-chalkboard"></i> Current Lesson: ${current.className}</h3>
+                <p>${current.startTime} - ${endTime}</p>
+                <div class="time-remaining" id="timeRemaining">Loading...</div>
+                <div class="progress-tracker"><div class="progress-fill" id="progressFill" style="width: 0%;"></div></div>
+                <p><i class="fas fa-bell"></i> Reminder will pop when lesson ends</p>
+            </div>
+        `;
+        
+        startCountdown(current);
+    }
+
+    function startCountdown(lesson) {
+        if (countdownInterval) clearInterval(countdownInterval);
+        
+        const [startHour, startMin] = lesson.startTime.split(':').map(Number);
+        const lessonStart = new Date();
+        lessonStart.setHours(startHour, startMin, 0, 0);
+        const lessonEnd = new Date(lessonStart.getTime() + lesson.duration * 60000);
+        
+        function update() {
+            const now = new Date();
+            if (now >= lessonEnd) {
+                document.getElementById('timeRemaining').innerHTML = '00:00:00';
+                document.getElementById('progressFill').style.width = '100%';
+                showLessonEndReminder(lesson);
+                if (countdownInterval) clearInterval(countdownInterval);
+                return;
+            }
+            
+            const remaining = lessonEnd - now;
+            const hours = Math.floor(remaining / 3600000);
+            const minutes = Math.floor((remaining % 3600000) / 60000);
+            const seconds = Math.floor((remaining % 60000) / 1000);
+            
+            document.getElementById('timeRemaining').innerHTML = `${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
+            
+            const total = lesson.duration * 60 * 1000;
+            const elapsed = total - remaining;
+            const percent = (elapsed / total) * 100;
+            document.getElementById('progressFill').style.width = `${percent}%`;
+        }
+        
+        update();
+        countdownInterval = setInterval(update, 1000);
+    }
+
+    function showLessonEndReminder(lesson) {
+        const nextLesson = getNextLessonAfter(lesson);
+        const reminderDiv = document.createElement('div');
+        reminderDiv.className = 'reminder-popup';
+        reminderDiv.innerHTML = `
+            <i class="fas fa-bell" style="color: #F59E0B;"></i>
+            <strong>Time to Leave!</strong>
+            <p>${lesson.className} lesson has ended.</p>
+            <p><i class="fas fa-arrow-right"></i> Next: ${nextLesson ? `${nextLesson.className} at ${nextLesson.startTime}` : 'No more lessons today'}</p>
+            <button onclick="this.parentElement.remove()" style="margin-top: 8px; background: var(--accent-primary); border: none; padding: 4px 12px; border-radius: 4px; color: white; cursor: pointer;">Dismiss</button>
+        `;
+        document.body.appendChild(reminderDiv);
+        setTimeout(() => reminderDiv.remove(), 10000);
+    }
+
+    function findCurrentLesson() {
+        const now = new Date();
+        const currentTime = now.getHours() * 60 + now.getMinutes();
+        const today = getCurrentDay();
+        
+        return lessonPlans.find(lesson => {
+            if (lesson.day !== today) return false;
+            const [hour, min] = lesson.startTime.split(':').map(Number);
+            const start = hour * 60 + min;
+            const end = start + lesson.duration;
+            return currentTime >= start && currentTime < end;
+        });
+    }
+
+    function getNextLesson() {
+        const now = new Date();
+        const currentTime = now.getHours() * 60 + now.getMinutes();
+        const today = getCurrentDay();
+        
+        const future = lessonPlans.filter(lesson => {
+            if (lesson.day !== today) return false;
+            const [hour, min] = lesson.startTime.split(':').map(Number);
+            const start = hour * 60 + min;
+            return start > currentTime;
+        }).sort((a,b) => a.startTime.localeCompare(b.startTime));
+        
+        return future[0]?.className || null;
+    }
+
+    function getNextLessonAfter(current) {
+        const now = new Date();
+        const currentTime = now.getHours() * 60 + now.getMinutes();
+        const today = getCurrentDay();
+        const [endHour, endMin] = calculateEndTime(current.startTime, current.duration).split(':').map(Number);
+        const end = endHour * 60 + endMin;
+        
+        const future = lessonPlans.filter(lesson => {
+            if (lesson.day !== today) return false;
+            const [hour, min] = lesson.startTime.split(':').map(Number);
+            const start = hour * 60 + min;
+            return start > end;
+        }).sort((a,b) => a.startTime.localeCompare(b.startTime));
+        
+        return future[0] || null;
+    }
+
+    function isCurrentLesson(lesson) {
+        const now = new Date();
+        const currentTime = now.getHours() * 60 + now.getMinutes();
+        const [hour, min] = lesson.startTime.split(':').map(Number);
+        const start = hour * 60 + min;
+        const end = start + lesson.duration;
+        return currentTime >= start && currentTime < end;
+    }
+
+    function getTimeRemaining(lesson) {
+        const now = new Date();
+        const [hour, min] = lesson.startTime.split(':').map(Number);
+        const lessonStart = new Date();
+        lessonStart.setHours(hour, min, 0, 0);
+        
+        if (now < lessonStart) {
+            const diff = lessonStart - now;
+            const minutes = Math.floor(diff / 60000);
+            return `In ${minutes} min`;
+        }
+        
+        const lessonEnd = new Date(lessonStart.getTime() + lesson.duration * 60000);
+        if (now < lessonEnd) {
+            const diff = lessonEnd - now;
+            const minutes = Math.floor(diff / 60000);
+            return `${minutes} min left`;
+        }
+        
+        return 'Finished';
+    }
+
+    function calculateEndTime(startTime, duration) {
+        const [hour, min] = startTime.split(':').map(Number);
+        let endHour = hour;
+        let endMin = min + duration;
+        while (endMin >= 60) { endHour++; endMin -= 60; }
+        return `${endHour.toString().padStart(2,'0')}:${endMin.toString().padStart(2,'0')}`;
+    }
+
+    function getCurrentDay() {
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        return days[new Date().getDay()];
+    }
+
+    function handleFileUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        showToast(`File "${file.name}" selected. Parse feature coming soon.`, 'info');
+        // In production, parse Excel/CSV here
+    }
+
+    function openModal(modalId) {
+        if (modalId === 'fullScheduleModal') {
+            const content = document.getElementById('fullScheduleContent');
+            const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+            let html = '';
+            for (const day of days) {
+                const lessons = lessonPlans.filter(p => p.day === day);
+                lessons.sort((a,b) => a.startTime.localeCompare(b.startTime));
+                html += `<h4 style="margin-top: 16px; color: var(--accent-primary);">${day}</h4>
+                    <table class="schedule-table" style="margin-bottom: 16px;">
+                        <thead><tr><th>Time</th><th>Class</th><th>Duration</th></tr></thead>
+                        <tbody>${lessons.map(l => `<tr><td>${l.startTime}</td><td>${l.className}</td><td>${l.duration} min</td></tr>`).join('')}
+                        ${lessons.length === 0 ? '<tr><td colspan="3">No lessons scheduled</td></tr>' : ''}</tbody>
+                     </table>`;
+            }
+            content.innerHTML = html;
+        }
+        document.getElementById(modalId).classList.add('active');
+    }
+
+    function closeModal(modalId) { document.getElementById(modalId).classList.remove('active'); }
+    function showToast(msg, type) {
+        const toast = document.createElement('div');
+        toast.style.cssText = `position:fixed; bottom:20px; right:20px; background:${type === 'success' ? '#10B981' : type === 'error' ? '#EF4444' : '#FF6600'}; color:white; padding:12px 20px; border-radius:8px; z-index:1000;`;
+        toast.textContent = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+    
+    window.closeModal = closeModal;
+    window.openModal = openModal;
+</script>
+</body>
+</html>
