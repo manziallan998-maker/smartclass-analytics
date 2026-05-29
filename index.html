@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>SmartClass Analytics - Teacher Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #000000;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, #1a0a00 0%, #000000 100%);
+            z-index: -1;
+        }
+
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
+            background: repeating-linear-gradient(
+                45deg,
+                rgba(255, 100, 0, 0.02) 0px,
+                rgba(255, 100, 0, 0.02) 2px,
+                transparent 2px,
+                transparent 8px
+            );
+            animation: bgMove 20s linear infinite;
+        }
+
+        @keyframes bgMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        /* Login Container */
+        .login-container {
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 48px 40px;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: 0 25px 50px -12px rgba(255, 100, 0, 0.3);
+            border: 1px solid rgba(255, 100, 0, 0.3);
+            animation: slideUp 0.6s ease-out;
+            z-index: 10;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .logo h1 {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #FF6600, #FFA500);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .logo p {
+            color: #888888;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 32px;
+            border-bottom: 1px solid #333333;
+        }
+
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 12px;
+            cursor: pointer;
+            color: #888888;
+            font-weight: 500;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .tab.active {
+            color: #FF6600;
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #FF6600;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #CCCCCC;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #FF6600;
+            font-size: 18px;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px 16px 14px 48px;
+            background: #1a1a1a;
+            border: 1px solid #333333;
+            border-radius: 12px;
+            color: #FFFFFF;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #FF6600;
+            box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.2);
+        }
+
+        input::placeholder {
+            color: #666666;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #FF6600, #FFA500);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(255, 102, 0, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            transform: none;
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            background: rgba(255, 68, 68, 0.1);
+            border: 1px solid #FF4444;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 20px;
+            color: #FF4444;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .success-message {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid #10B981;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 20px;
+            color: #10B981;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 32px;
+            color: #666666;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="bg-animation"></div>
+
+<div class="login-container">
+    <div class="logo">
+        <h1>🎓 SMARTCLASS ANALYTICS</h1>
+        <p>Teacher's Ultimate Companion</p>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" data-tab="login">LOGIN</div>
+        <div class="tab" data-tab="signup">SIGN UP</div>
+    </div>
+
+    <!-- Login Form -->
+    <form id="loginForm" class="active-form">
+        <div id="loginError" class="error-message hidden"></div>
+        <div class="form-group">
+            <label>Email Address</label>
+            <div class="input-group">
+                <i class="fas fa-envelope"></i>
+                <input type="email" id="loginEmail" placeholder="teacher@school.rw" required>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <div class="input-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" id="loginPassword" placeholder="••••••••" required>
+            </div>
+        </div>
+        <button type="submit" class="btn"><i class="fas fa-arrow-right-to-bracket"></i> LOGIN</button>
+    </form>
+
+    <!-- Signup Form -->
+    <form id="signupForm" class="hidden">
+        <div id="signupError" class="error-message hidden"></div>
+        <div id="signupSuccess" class="success-message hidden"></div>
+        
+        <div class="form-group">
+            <label>Full Name</label>
+            <div class="input-group">
+                <i class="fas fa-user"></i>
+                <input type="text" id="fullname" placeholder="Mr. Jean UWIMANA" required>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Email Address</label>
+            <div class="input-group">
+                <i class="fas fa-envelope"></i>
+                <input type="email" id="email" placeholder="teacher@school.rw" required>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>School Name</label>
+            <div class="input-group">
+                <i class="fas fa-school"></i>
+                <input type="text" id="school" placeholder="G.S. Saint Andre" required>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Subject Taught</label>
+            <div class="input-group">
+                <i class="fas fa-flask"></i>
+                <input type="text" id="subject" placeholder="Physics" required>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <div class="input-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" id="password" placeholder="••••••••" required>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Confirm Password</label>
+            <div class="input-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" id="confirmPassword" placeholder="••••••••" required>
+            </div>
+        </div>
+        <button type="submit" class="btn"><i class="fas fa-user-plus"></i> CREATE ACCOUNT</button>
+    </form>
+
+    <div class="footer">
+        <p>© 2026 SmartClass Analytics | Secure Teacher Portal</p>
+        <p style="margin-top: 8px;">Works offline • Syncs when online</p>
+    </div>
+</div>
+
+<script>
+    // Tab switching
+    const tabs = document.querySelectorAll('.tab');
+    const loginForm = document.getElementById('loginForm');
+    const signupForm = document.getElementById('signupForm');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            if (tab.dataset.tab === 'login') {
+                loginForm.classList.remove('hidden');
+                signupForm.classList.add('hidden');
+            } else {
+                loginForm.classList.add('hidden');
+                signupForm.classList.remove('hidden');
+            }
+        });
+    });
+
+    // API URLs - works both locally and on Cloudflare
+    const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? 'http://localhost:8787'
+        : 'https://smartclass-analytics.workers.dev';
+
+    // SIGNUP FUNCTION
+    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        document.getElementById('signupError').classList.add('hidden');
+        document.getElementById('signupSuccess').classList.add('hidden');
+        
+        const fullname = document.getElementById('fullname').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const school = document.getElementById('school').value.trim();
+        const subject = document.getElementById('subject').value.trim();
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        
+        if (!fullname || !email || !school || !subject || !password) {
+            document.getElementById('signupError').textContent = 'All fields are required';
+            document.getElementById('signupError').classList.remove('hidden');
+            return;
+        }
+        
+        if (password !== confirmPassword) {
+            document.getElementById('signupError').textContent = 'Passwords do not match';
+            document.getElementById('signupError').classList.remove('hidden');
+            return;
+        }
+        
+        if (password.length < 6) {
+            document.getElementById('signupError').textContent = 'Password must be at least 6 characters';
+            document.getElementById('signupError').classList.remove('hidden');
+            return;
+        }
+        
+        const submitBtn = e.target.querySelector('.btn');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Account...';
+        submitBtn.disabled = true;
+        
+        try {
+            const response = await fetch(`${API_URL}/api/signup`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fullname, email, school, subject, password })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                document.getElementById('signupSuccess').textContent = 'Account created successfully! Please login.';
+                document.getElementById('signupSuccess').classList.remove('hidden');
+                
+                document.getElementById('fullname').value = '';
+                document.getElementById('email').value = '';
+                document.getElementById('school').value = '';
+                document.getElementById('subject').value = '';
+                document.getElementById('password').value = '';
+                document.getElementById('confirmPassword').value = '';
+                
+                setTimeout(() => {
+                    document.querySelector('.tab[data-tab="login"]').click();
+                }, 2000);
+            } else {
+                document.getElementById('signupError').textContent = data.message || 'Signup failed';
+                document.getElementById('signupError').classList.remove('hidden');
+            }
+        } catch (error) {
+            console.error('Signup error:', error);
+            document.getElementById('signupError').textContent = 'Connection error. Please try again.';
+            document.getElementById('signupError').classList.remove('hidden');
+        } finally {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
+    });
+
+    // LOGIN FUNCTION
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        document.getElementById('loginError').classList.add('hidden');
+        
+        const email = document.getElementById('loginEmail').value.trim();
+        const password = document.getElementById('loginPassword').value;
+        
+        if (!email || !password) {
+            document.getElementById('loginError').textContent = 'Email and password required';
+            document.getElementById('loginError').classList.remove('hidden');
+            return;
+        }
+        
+        const submitBtn = e.target.querySelector('.btn');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
+        submitBtn.disabled = true;
+        
+        try {
+            const response = await fetch(`${API_URL}/api/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                localStorage.setItem('teacherToken', data.token);
+                localStorage.setItem('teacherName', data.name);
+                localStorage.setItem('teacherEmail', email);
+                window.location.href = 'dashboard.html';
+            } else {
+                document.getElementById('loginError').textContent = data.message || 'Invalid credentials';
+                document.getElementById('loginError').classList.remove('hidden');
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            document.getElementById('loginError').textContent = 'Connection error. Please try again.';
+            document.getElementById('loginError').classList.remove('hidden');
+        } finally {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
+    });
+</script>
+</body>
+</html>
