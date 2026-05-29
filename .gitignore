@@ -1,0 +1,17 @@
+node_modules/
+.wrangler/
+*.log
+.DS_Store
+*.db
+*.sqlite
+.vscode/
+.idea/
+*.pyc
+__pycache__/
+venv/
+env/
+.venv/
+dist/
+build/
+*.tmp
+*.temp
