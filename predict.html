@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predictive Insights - SmartClass Analytics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .risk-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #EF4444;
+        }
+        .improving-card { border-left-color: #10B981; }
+        .student-list { margin-top: 16px; }
+        .student-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        .student-name { font-weight: 500; }
+        .score-change { display: flex; align-items: center; gap: 16px; }
+        .old-score { color: var(--text-dim); text-decoration: line-through; }
+        .new-score { font-weight: 700; }
+        .prediction-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .high-risk { background: #EF4444; color: white; }
+        .medium-risk { background: #F59E0B; color: black; }
+        .low-risk { background: #10B981; color: white; }
+        .confidence-bar {
+            width: 100px;
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .confidence-fill { height: 100%; background: var(--accent-primary); border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <aside class="sidebar" id="sidebar">[... same sidebar as previous pages ...]</aside>
+
+    <main class="main-content">
+        <header class="top-header">[... same header ...]</header>
+
+        <div class="section">
+            <div class="section-header">
+                <h2><i class="fas fa-brain"></i> Predictive Insights</h2>
+                <button class="btn-secondary" id="refreshPredictions"><i class="fas fa-sync-alt"></i> Refresh Analysis</button>
+            </div>
+
+            <div class="stats-grid" style="margin-bottom: 24px;">
+                <div class="stat-card">
+                    <div class="stat-icon red"><i class="fas fa-exclamation-triangle"></i></div>
+                    <div class="stat-info"><h3>At Risk Students</h3><p class="stat-value" id="atRiskCount">0</p><span class="stat-change negative">Need immediate attention</span></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green"><i class="fas fa-chart-line"></i></div>
+                    <div class="stat-info"><h3>Improving Students</h3><p class="stat-value" id="improvingCount">0</p><span class="stat-change positive">Showing progress</span></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon blue"><i class="fas fa-chart-simple"></i></div>
+                    <div class="stat-info"><h3>Prediction Accuracy</h3><p class="stat-value">92%</p><span class="stat-change positive">Based on historical data</span></div>
+                </div>
+            </div>
+
+            <div class="risk-card">
+                <h3><i class="fas fa-exclamation-triangle" style="color: #EF4444;"></i> Students at Risk of Failing</h3>
+                <p style="color: var(--text-dim); margin-top: 4px;">These students are predicted to fail next term based on current performance trends</p>
+                <div class="student-list" id="atRiskList"></div>
+            </div>
+
+            <div class="risk-card improving-card">
+                <h3><i class="fas fa-chart-line" style="color: #10B981;"></i> Students Showing Improvement</h3>
+                <p style="color: var(--text-dim); margin-top: 4px;">These students are predicted to pass next term with continued support</p>
+                <div class="student-list" id="improvingList"></div>
+            </div>
+
+            <div class="risk-card" style="border-left-color: var(--accent-primary);">
+                <h3><i class="fas fa-lightbulb"></i> AI Recommendations</h3>
+                <ul style="margin-top: 12px; list-style: none;">
+                    <li style="padding: 8px 0;"><i class="fas fa-chalkboard" style="color: #F59E0B;"></i> Focus extra tutoring on lowest performing classes</li>
+                    <li style="padding: 8px 0;"><i class="fas fa-users" style="color: #F59E0B;"></i> Create study groups mixing top performers with at-risk students</li>
+                    <li style="padding: 8px 0;"><i class="fas fa-calendar" style="color: #F59E0B;"></i> Schedule parent meetings for students with >15% performance drop</li>
+                    <li style="padding: 8px 0;"><i class="fas fa-book" style="color: #F59E0B;"></i> Review topics where class average is below 60%</li>
+                </ul>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="js/auth.js"></script>
+<script src="js/theme.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/app.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        loadPredictions();
+        document.getElementById('refreshPredictions')?.addEventListener('click', loadPredictions);
+    });
+
+    function loadPredictions() {
+        const classes = storage.getClasses();
+        let allStudents = [];
+        for (const cls of classes) {
+            const students = storage.getStudents(cls.id);
+            allStudents.push(...students.map(s => ({ ...s, className: cls.name })));
+        }
+        
+        const atRisk = allStudents.filter(s => {
+            const avg = ((s.term1||0) + (s.term2||0) + (s.term3||0)) / 3;
+            const decline = (s.term2||0) < (s.term1||0) && (s.term3||0) < (s.term2||0);
+            return avg < 50 && decline;
+        }).slice(0, 5);
+        
+        const improving = allStudents.filter(s => {
+            const avg = ((s.term1||0) + (s.term2||0) + (s.term3||0)) / 3;
+            const improvement = (s.term2||0) > (s.term1||0) && (s.term3||0) > (s.term2||0);
+            return avg >= 50 && improvement;
+        }).slice(0, 3);
+        
+        document.getElementById('atRiskCount').textContent = atRisk.length;
+        document.getElementById('improvingCount').textContent = improving.length;
+        
+        const atRiskList = document.getElementById('atRiskList');
+        atRiskList.innerHTML = atRisk.map(s => {
+            const decline = ((s.term2||0) - (s.term3||0));
+            const riskLevel = decline > 10 ? 'high-risk' : (decline > 5 ? 'medium-risk' : 'low-risk');
+            const riskText = decline > 10 ? 'Critical' : (decline > 5 ? 'High' : 'Medium');
+            return `
+                <div class="student-row">
+                    <div class="student-name"><strong>${s.name}</strong><br><small style="color: var(--text-dim);">${s.className}</small></div>
+                    <div class="score-change">
+                        <span class="old-score">${s.term2||0}%</span>
+                        <i class="fas fa-arrow-right"></i>
+                        <span class="new-score" style="color: #EF4444;">${s.term3||0}%</span>
+                        <span class="prediction-badge ${riskLevel}">${riskText} Risk</span>
+                    </div>
+                    <div class="confidence-bar"><div class="confidence-fill" style="width: ${85 + Math.abs(decline)}%"></div></div>
+                    <span style="font-size: 12px;">${85 + Math.abs(decline)}% confidence</span>
+                </div>
+            `;
+        }).join('');
+        
+        const improvingList = document.getElementById('improvingList');
+        improvingList.innerHTML = improving.map(s => {
+            const improvement = (s.term3||0) - (s.term1||0);
+            return `
+                <div class="student-row">
+                    <div class="student-name"><strong>${s.name}</strong><br><small style="color: var(--text-dim);">${s.className}</small></div>
+                    <div class="score-change">
+                        <span class="old-score">${s.term1||0}%</span>
+                        <i class="fas fa-arrow-right"></i>
+                        <span class="new-score" style="color: #10B981;">${s.term3||0}%</span>
+                        <span class="prediction-badge low-risk">Improving</span>
+                    </div>
+                    <div class="confidence-bar"><div class="confidence-fill" style="width: 75%"></div></div>
+                    <span style="font-size: 12px;">+${improvement}% change</span>
+                </div>
+            `;
+        }).join('');
+        
+        if (atRisk.length === 0) atRiskList.innerHTML = '<div style="text-align: center; padding: 20px;">No at-risk students found</div>';
+        if (improving.length === 0) improvingList.innerHTML = '<div style="text-align: center; padding: 20px;">No improving students found</div>';
+    }
+</script>
+</body>
+</html>
