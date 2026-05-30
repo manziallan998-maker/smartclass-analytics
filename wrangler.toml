@@ -1,6 +1,5 @@
 # ============================================================================
 #  WRANGLER CONFIGURATION - SMARTCLASS ANALYTICS v2.0
-#  Professional Cloudflare Pages + Workers Configuration
 # ============================================================================
 
 name = "smartclass-analytics"
@@ -11,26 +10,21 @@ compatibility_date = "2026-05-30"
 #  NODE.JS COMPATIBILITY FLAGS
 # ============================================================================
 compatibility_flags = [
-    "nodejs_compat",
-    "streams_enable_constructors",
-    "fetch_refuse_unknown_protocols"
+    "nodejs_compat"
 ]
 
 # ============================================================================
-#  ASSETS CONFIGURATION - Static files serving
+#  ASSETS CONFIGURATION
 # ============================================================================
 [assets]
 directory = "."
-binding = "ASSETS"
-not_found_handling = "404.html"
+not_found_handling = "single-page-application"
 
 # ============================================================================
-#  OBSERVABILITY - Monitoring & Logging
+#  OBSERVABILITY - FIXED (removed invalid tail_sampling_rate)
 # ============================================================================
 [observability]
 enabled = true
-head_sampling_rate = 1.0
-tail_sampling_rate = 0.1
 
 # ============================================================================
 #  ENVIRONMENT VARIABLES
@@ -39,44 +33,3 @@ tail_sampling_rate = 0.1
 ENVIRONMENT = "production"
 APP_NAME = "SmartClass Analytics"
 APP_VERSION = "2.0.0"
-API_VERSION = "v1"
-JWT_SECRET = "smartclass-super-secret-key-2026-change-in-production"
-SESSION_TIMEOUT = "3600"
-MAX_LOGIN_ATTEMPTS = "5"
-RATE_LIMIT_REQUESTS = "100"
-RATE_LIMIT_WINDOW = "60"
-
-# ============================================================================
-#  D1 DATABASE CONFIGURATION (For future production use)
-# ============================================================================
-# [[d1_databases]]
-# binding = "DB"
-# database_name = "smartclass-db"
-# database_id = "your-database-id-here"
-
-# ============================================================================
-#  R2 BUCKET CONFIGURATION (For file storage)
-# ============================================================================
-# [[r2_buckets]]
-# binding = "STORAGE"
-# bucket_name = "smartclass-storage"
-
-# ============================================================================
-#  QUEUE CONFIGURATION (For background jobs)
-# ============================================================================
-# [[queues]]
-# binding = "TASKS"
-# queue_name = "smartclass-tasks"
-
-# ============================================================================
-#  SERVICE BINDINGS
-# ============================================================================
-# [services]
-# AI = "ai-worker"
-
-# ============================================================================
-#  CUSTOM DOMAINS
-# ============================================================================
-# [[routes]]
-# pattern = "smartclass-analytics.com/*"
-# zone_name = "smartclass-analytics.com"
