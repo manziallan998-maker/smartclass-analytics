@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - SmartClass Analytics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #000000;
+            color: #FFFFFF;
+            overflow-x: hidden;
+        }
+
+        /* ==================== SIDEBAR ==================== */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 100;
+            transition: transform 0.3s ease;
+            border-right: 1px solid #222222;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-280px);
+        }
+
+        .sidebar-header {
+            padding: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #222222;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 18px;
+            font-weight: 700;
+            color: #FF6600;
+        }
+
+        .logo i {
+            font-size: 24px;
+        }
+
+        .close-sidebar {
+            background: none;
+            border: none;
+            color: #666666;
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        .close-sidebar:hover {
+            color: #FF4444;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 24px 16px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            margin-bottom: 4px;
+            color: #CCCCCC;
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+
+        .nav-item i {
+            width: 24px;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 102, 0, 0.1);
+            color: #FF6600;
+        }
+
+        .nav-item.active {
+            background: rgba(255, 102, 0, 0.15);
+            color: #FF6600;
+            border-left: 3px solid #FF6600;
+        }
+
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid #222222;
+        }
+
+        .teacher-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 102, 0, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #FF6600;
+        }
+
+        .info .name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .info .email {
+            font-size: 12px;
+            color: #666666;
+        }
+
+        .logout-btn {
+            width: 100%;
+            padding: 10px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #EF4444;
+            border-radius: 8px;
+            color: #EF4444;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #EF4444;
+            color: white;
+        }
+
+        /* ==================== MAIN CONTENT ==================== */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            transition: margin-left 0.3s ease;
+            min-height: 100vh;
+        }
+
+        .main-content.expanded {
+            margin-left: 0;
+        }
+
+        .top-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 32px;
+            background: #0a0a0a;
+            border-bottom: 1px solid #222222;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            display: none;
+        }
+
+        .header-title h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .header-title p {
+            color: #888888;
+            font-size: 14px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .notifications-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            position: relative;
+            padding: 8px;
+        }
+
+        .notifications-btn .badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: #EF4444;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+
+        .theme-toggle button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            padding: 24px 32px;
+        }
+
+        .stat-card {
+            background: #111111;
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border: 1px solid #222222;
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            border-color: #FF6600;
+        }
+
+        .stat-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+
+        .stat-icon.blue { background: rgba(59, 130, 246, 0.2); color: #3B82F6; }
+        .stat-icon.green { background: rgba(16, 185, 129, 0.2); color: #10B981; }
+        .stat-icon.orange { background: rgba(255, 102, 0, 0.2); color: #FF6600; }
+        .stat-icon.red { background: rgba(239, 68, 68, 0.2); color: #EF4444; }
+
+        .stat-info h3 {
+            font-size: 14px;
+            font-weight: 500;
+            color: #888888;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .stat-change {
+            font-size: 12px;
+        }
+
+        .stat-change.positive { color: #10B981; }
+        .stat-change.negative { color: #EF4444; }
+
+        /* Sections */
+        .section {
+            padding: 0 32px 24px 32px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .search-input {
+            padding: 8px 16px;
+            background: #1a1a1a;
+            border: 1px solid #333333;
+            border-radius: 8px;
+            color: white;
+            width: 220px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #FF6600;
+        }
+
+        .btn-secondary {
+            padding: 8px 16px;
+            background: #1a1a1a;
+            border: 1px solid #333333;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-secondary:hover {
+            background: #FF6600;
+            border-color: #FF6600;
+        }
+
+        /* Performance Table */
+        .performance-table-container {
+            background: #111111;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid #222222;
+        }
+
+        .performance-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .performance-table th,
+        .performance-table td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid #222222;
+        }
+
+        .performance-table th {
+            background: #0a0a0a;
+            color: #FF6600;
+            font-weight: 600;
+        }
+
+        .performance-table tr:hover {
+            background: #1a1a1a;
+        }
+
+        .class-name {
+            font-weight: 600;
+        }
+
+        .student-count {
+            font-size: 12px;
+            color: #888888;
+        }
+
+        .progress-bar {
+            width: 150px;
+            height: 8px;
+            background: #222222;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+
+        .percentage {
+            font-weight: 700;
+        }
+
+        .trend-up { color: #10B981; }
+        .trend-down { color: #EF4444; }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .action-card {
+            background: #111111;
+            border: 1px solid #222222;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .action-card:hover {
+            border-color: #FF6600;
+            transform: translateY(-2px);
+        }
+
+        .action-card i {
+            font-size: 32px;
+            color: #FF6600;
+        }
+
+        .action-card span {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #111111;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 24px;
+            border: 1px solid #333333;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #222222;
+        }
+
+        .modal-header h3 {
+            font-size: 20px;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: #888888;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #FF6600, #FFA500);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .quick-actions {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-280px);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .menu-toggle {
+                display: block;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+                padding: 16px;
+            }
+            .section {
+                padding: 0 16px 16px 16px;
+            }
+            .performance-table th,
+            .performance-table td {
+                padding: 12px;
+            }
+            .progress-bar {
+                width: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-chalkboard-user"></i>
+                <span>SMARTCLASS</span>
+            </div>
+            <button class="close-sidebar" id="closeSidebar">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-item active"><i class="fas fa-home"></i><span>Dashboard</span></a>
+            <a href="classes.html" class="nav-item"><i class="fas fa-book"></i><span>Classes</span></a>
+            <a href="groups.html" class="nav-item"><i class="fas fa-users"></i><span>Smart Groups</span></a>
+            <a href="analytics.html" class="nav-item"><i class="fas fa-chart-line"></i><span>Analytics</span></a>
+            <a href="predict.html" class="nav-item"><i class="fas fa-brain"></i><span>Predict</span></a>
+            <a href="lesson-planner.html" class="nav-item"><i class="fas fa-calendar-alt"></i><span>Lesson Planner</span></a>
+            <a href="timetable.html" class="nav-item"><i class="fas fa-clock"></i><span>Timetable</span></a>
+            <a href="reports.html" class="nav-item"><i class="fas fa-file-alt"></i><span>Reports</span></a>
+            <a href="compete.html" class="nav-item"><i class="fas fa-trophy"></i><span>Compete</span></a>
+            <a href="backup.html" class="nav-item"><i class="fas fa-database"></i><span>Backup</span></a>
+            <a href="settings.html" class="nav-item"><i class="fas fa-cog"></i><span>Settings</span></a>
+            <a href="help.html" class="nav-item"><i class="fas fa-question-circle"></i><span>Help</span></a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="teacher-info">
+                <div class="avatar"><i class="fas fa-user"></i></div>
+                <div class="info">
+                    <p class="name" id="teacherName">Teacher</p>
+                    <p class="email" id="teacherEmail">teacher@school.rw</p>
+                </div>
+            </div>
+            <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i><span>Logout</span></button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="top-header">
+            <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+            <div class="header-title">
+                <h1>Dashboard</h1>
+                <p>Welcome back, <span id="teacherNameHeader">Teacher</span></p>
+            </div>
+            <div class="header-actions">
+                <div class="notifications-wrapper">
+                    <button class="notifications-btn" id="notificationsBtn">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge" id="notificationBadge">3</span>
+                    </button>
+                </div>
+                <div class="theme-toggle">
+                    <button id="themeToggle"><i class="fas fa-moon"></i></button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon blue"><i class="fas fa-users"></i></div>
+                <div class="stat-info">
+                    <h3>Total Students</h3>
+                    <p class="stat-value" id="totalStudents">0</p>
+                    <span class="stat-change positive" id="studentChange">+0 this term</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon orange"><i class="fas fa-chalkboard"></i></div>
+                <div class="stat-info">
+                    <h3>Total Classes</h3>
+                    <p class="stat-value" id="totalClasses">0</p>
+                    <span class="stat-change">All active</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green"><i class="fas fa-chart-line"></i></div>
+                <div class="stat-info">
+                    <h3>Passing Rate</h3>
+                    <p class="stat-value" id="passingRate">0%</p>
+                    <span class="stat-change positive" id="passingChange">+0% from last term</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon red"><i class="fas fa-exclamation-triangle"></i></div>
+                <div class="stat-info">
+                    <h3>Needs Attention</h3>
+                    <p class="stat-value" id="needsAttention">0</p>
+                    <span class="stat-change negative" id="attentionChange">-0 from last term</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Class Performance Section -->
+        <div class="section">
+            <div class="section-header">
+                <h2>Class Performance Overview</h2>
+                <div class="section-actions">
+                    <input type="text" id="classSearch" placeholder="Search class..." class="search-input">
+                    <button class="btn-secondary" id="refreshBtn"><i class="fas fa-sync-alt"></i> Refresh</button>
+                </div>
+            </div>
+            <div class="performance-table-container">
+                <table class="performance-table" id="performanceTable">
+                    <thead>
+                        <tr><th>Class Name</th><th>Students</th><th>Average Score</th><th>Trend</th><th>Status</th><th>Action</th></tr>
+                    </thead>
+                    <tbody id="performanceTableBody">
+                        <tr><td colspan="6" style="text-align: center;">Loading classes...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="section">
+            <div class="section-header">
+                <h2>Quick Actions</h2>
+            </div>
+            <div class="quick-actions">
+                <div class="action-card" onclick="window.location.href='classes.html'">
+                    <i class="fas fa-pen"></i>
+                    <span>Add Marks</span>
+                </div>
+                <div class="action-card" onclick="window.location.href='classes.html'">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Add Class</span>
+                </div>
+                <div class="action-card" onclick="window.location.href='groups.html'">
+                    <i class="fas fa-users"></i>
+                    <span>Create Groups</span>
+                </div>
+                <div class="action-card" onclick="window.location.href='settings.html'">
+                    <i class="fas fa-sliders-h"></i>
+                    <span>Settings</span>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Class Details Modal -->
+<div class="modal" id="classModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle">Class Details</h3>
+            <button class="close-modal" onclick="closeModal('classModal')">&times;</button>
+        </div>
+        <div id="modalBody"></div>
+    </div>
+</div>
+
+<script>
+    // ==================== DATA STORAGE ====================
+    // Initialize data if not exists
+    function initData() {
+        if (!localStorage.getItem('classes')) {
+            const defaultClasses = [
+                { id: 'cls1', name: 'Physics S4A', studentCount: 42, average: 68, trend: '+5%', status: 'Good' },
+                { id: 'cls2', name: 'Physics S3B', studentCount: 38, average: 58, trend: '-2%', status: 'Needs Attention' },
+                { id: 'cls3', name: 'Physics S3A', studentCount: 40, average: 72, trend: '+3%', status: 'Good' },
+                { id: 'cls4', name: 'Physics S2A', studentCount: 35, average: 66, trend: '+4%', status: 'Good' },
+                { id: 'cls5', name: 'Physics S2B', studentCount: 37, average: 84, trend: '+8%', status: 'Excellent' }
+            ];
+            localStorage.setItem('classes', JSON.stringify(defaultClasses));
+        }
+        
+        if (!localStorage.getItem('students')) {
+            const defaultStudents = [
+                { id: 'stu1', classId: 'cls1', name: 'UWAMAHORO Eric', term1: 82, term2: 88, term3: 94 },
+                { id: 'stu2', classId: 'cls1', name: 'IRADUKUNDA Diane', term1: 85, term2: 89, term3: 91 },
+                { id: 'stu3', classId: 'cls1', name: 'NSENGIYUMVA Jean', term1: 80, term2: 85, term3: 88 },
+                { id: 'stu4', classId: 'cls1', name: 'MUKAMANA Grace', term1: 45, term2: 58, term3: 71 },
+                { id: 'stu5', classId: 'cls1', name: 'NDAYISABA Pierre', term1: 38, term2: 42, term3: 41 }
+            ];
+            localStorage.setItem('students', JSON.stringify(defaultStudents));
+        }
+    }
+
+    // Get all classes
+    function getClasses() {
+        return JSON.parse(localStorage.getItem('classes') || '[]');
+    }
+
+    // Get all students
+    function getStudents() {
+        return JSON.parse(localStorage.getItem('students') || '[]');
+    }
+
+    // Get students by class
+    function getStudentsByClass(classId) {
+        return getStudents().filter(s => s.classId === classId);
+    }
+
+    // Calculate class average from student marks
+    function calculateClassAverage(classId, term = 3) {
+        const students = getStudentsByClass(classId);
+        if (students.length === 0) return 0;
+        const sum = students.reduce((total, s) => total + (s[`term${term}`] || 0), 0);
+        return Math.round(sum / students.length);
+    }
+
+    // Update class averages and student counts
+    function updateClassStats() {
+        let classes = getClasses();
+        const students = getStudents();
+        
+        classes = classes.map(cls => {
+            const classStudents = students.filter(s => s.classId === cls.id);
+            const avg = calculateClassAverage(cls.id, 3);
+            return {
+                ...cls,
+                studentCount: classStudents.length,
+                average: avg
+            };
+        });
+        
+        localStorage.setItem('classes', JSON.stringify(classes));
+        return classes;
+    }
+
+    // ==================== DASHBOARD RENDER ====================
+    function updateStats() {
+        const classes = getClasses();
+        const students = getStudents();
+        
+        const totalStudents = students.length;
+        const totalClasses = classes.length;
+        
+        const term3Scores = students.map(s => s.term3 || 0);
+        const passingCount = term3Scores.filter(s => s >= 50).length;
+        const passingRate = totalStudents > 0 ? Math.round((passingCount / totalStudents) * 100) : 0;
+        const needsAttention = term3Scores.filter(s => s < 50).length;
+        
+        document.getElementById('totalStudents').textContent = totalStudents;
+        document.getElementById('totalClasses').textContent = totalClasses;
+        document.getElementById('passingRate').textContent = passingRate + '%';
+        document.getElementById('needsAttention').textContent = needsAttention;
+        
+        // Calculate changes from previous term
+        const term2Scores = students.map(s => s.term2 || 0);
+        const term2Passing = term2Scores.filter(s => s >= 50).length;
+        const term2Rate = totalStudents > 0 ? Math.round((term2Passing / totalStudents) * 100) : 0;
+        const rateChange = passingRate - term2Rate;
+        
+        document.getElementById('passingChange').innerHTML = (rateChange >= 0 ? '+' : '') + rateChange + '% from last term';
+        document.getElementById('passingChange').className = 'stat-change ' + (rateChange >= 0 ? 'positive' : 'negative');
+    }
+
+    function renderPerformanceTable() {
+        const classes = updateClassStats();
+        const tbody = document.getElementById('performanceTableBody');
+        const searchTerm = document.getElementById('classSearch')?.value.toLowerCase() || '';
+        
+        const filtered = classes.filter(cls => cls.name.toLowerCase().includes(searchTerm));
+        
+        if (filtered.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No classes found</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = filtered.map(cls => {
+            const avg = cls.average || 0;
+            const trendValue = cls.trend || (avg > 70 ? '+5%' : avg < 60 ? '-3%' : '+2%');
+            const isPositive = trendValue.startsWith('+');
+            const statusClass = avg >= 80 ? 'Excellent' : avg >= 60 ? 'Good' : 'Needs Attention';
+            const statusColor = avg >= 80 ? '#10B981' : avg >= 60 ? '#FF6600' : '#EF4444';
+            const barColor = avg >= 80 ? '#10B981' : avg >= 60 ? '#FF6600' : '#EF4444';
+            
+            return `
+                <tr>
+                    <td>
+                        <div class="class-name">${cls.name}</div>
+                        <div class="student-count">${cls.studentCount || 0} students</div>
+                    </td>
+                    <td>${cls.studentCount || 0}</td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${avg}%; background: ${barColor};"></div>
+                            </div>
+                            <span class="percentage">${avg}%</span>
+                        </div>
+                    </td>
+                    <td class="${isPositive ? 'trend-up' : 'trend-down'}">${isPositive ? '↑' : '↓'} ${trendValue}</td>
+                    <td><span style="color: ${statusColor};">${statusClass}</span></td>
+                    <td>
+                        <button class="btn-secondary" onclick="viewClassDetails('${cls.id}')" style="padding: 6px 12px;">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function viewClassDetails(classId) {
+        const cls = getClasses().find(c => c.id === classId);
+        const students = getStudentsByClass(classId);
+        
+        document.getElementById('modalTitle').textContent = `${cls.name} - Class Details`;
+        
+        let studentsHtml = '';
+        if (students.length === 0) {
+            studentsHtml = '<p style="text-align: center;">No students enrolled in this class.</p>';
+        } else {
+            studentsHtml = `
+                <table class="performance-table" style="width: 100%;">
+                    <thead>
+                        <tr><th>Student Name</th><th>Term 1</th><th>Term 2</th><th>Term 3</th><th>Average</th><th>Status</th></tr>
+                    </thead>
+                    <tbody>
+                        ${students.map(s => {
+                            const avg = ((s.term1||0) + (s.term2||0) + (s.term3||0)) / 3;
+                            const status = avg >= 80 ? 'Excellent' : avg >= 50 ? 'Good' : 'Failing';
+                            return `
+                                <tr>
+                                    <td>${s.name}</td>
+                                    <td>${s.term1 || '-'}%</td>
+                                    <td>${s.term2 || '-'}%</td>
+                                    <td>${s.term3 || '-'}%</td>
+                                    <td><strong>${avg.toFixed(1)}%</strong></td>
+                                    <td>${status}</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+        
+        document.getElementById('modalBody').innerHTML = `
+            <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 20px;">
+                <div class="stat-card"><div class="stat-info"><h3>Total Students</h3><p class="stat-value">${students.length}</p></div></div>
+                <div class="stat-card"><div class="stat-info"><h3>Class Average</h3><p class="stat-value">${cls.average || 0}%</p></div></div>
+                <div class="stat-card"><div class="stat-info"><h3>Passing Rate</h3><p class="stat-value">${students.filter(s => (s.term3||0) >= 50).length / (students.length||1) * 100}%</p></div></div>
+            </div>
+            <h4 style="margin: 16px 0;">Student List</h4>
+            ${studentsHtml}
+        `;
+        
+        openModal('classModal');
+    }
+
+    function openModal(id) {
+        document.getElementById(id).classList.add('active');
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('active');
+    }
+
+    // ==================== AUTHENTICATION ====================
+    function checkAuth() {
+        const token = localStorage.getItem('teacherToken');
+        const teacherName = localStorage.getItem('teacherName');
+        const teacherEmail = localStorage.getItem('teacherEmail');
+        
+        if (!token) {
+            window.location.href = 'index.html';
+            return false;
+        }
+        
+        if (teacherName) {
+            document.querySelectorAll('#teacherName, #teacherNameHeader').forEach(el => {
+                if (el) el.textContent = teacherName;
+            });
+        }
+        if (teacherEmail) {
+            document.getElementById('teacherEmail').textContent = teacherEmail;
+        }
+        
+        return true;
+    }
+
+    function logout() {
+        localStorage.removeItem('teacherToken');
+        localStorage.removeItem('teacherName');
+        localStorage.removeItem('teacherEmail');
+        window.location.href = 'index.html';
+    }
+
+    // ==================== INITIALIZATION ====================
+    document.addEventListener('DOMContentLoaded', () => {
+        if (!checkAuth()) return;
+        
+        initData();
+        updateStats();
+        renderPerformanceTable();
+        
+        // Setup event listeners
+        document.getElementById('logoutBtn')?.addEventListener('click', logout);
+        document.getElementById('refreshBtn')?.addEventListener('click', () => {
+            updateStats();
+            renderPerformanceTable();
+        });
+        document.getElementById('classSearch')?.addEventListener('input', () => renderPerformanceTable());
+        
+        // Sidebar toggle
+        const menuToggle = document.getElementById('menuToggle');
+        const closeSidebar = document.getElementById('closeSidebar');
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.querySelector('.main-content');
+        
+        menuToggle?.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+        });
+        
+        closeSidebar?.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            if (window.innerWidth > 768) {
+                sidebar.classList.add('collapsed');
+                mainContent.classList.add('expanded');
+            }
+        });
+        
+        // Theme toggle
+        const themeToggle = document.getElementById('themeToggle');
+        let isDark = true;
+        themeToggle?.addEventListener('click', () => {
+            isDark = !isDark;
+            document.body.style.background = isDark ? '#000000' : '#F5F5F5';
+            document.body.style.color = isDark ? '#FFFFFF' : '#111111';
+            themeToggle.innerHTML = isDark ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
+        });
+        
+        // Notifications
+        const notifBtn = document.getElementById('notificationsBtn');
+        notifBtn?.addEventListener('click', () => {
+            alert('📋 Notifications:\n\n• Today: Physics S4A at 08:00\n• 8 students failing in Physics S3B\n• UWAMAHORO Eric is top performer');
+        });
+    });
+    
+    window.viewClassDetails = viewClassDetails;
+    window.closeModal = closeModal;
+</script>
+</body>
+</html>
