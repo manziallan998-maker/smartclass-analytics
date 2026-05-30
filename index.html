@@ -24,6 +24,7 @@
             overflow-x: hidden;
         }
 
+        /* Animated background */
         .bg-animation {
             position: fixed;
             top: 0;
@@ -342,26 +343,8 @@
         });
     });
 
-    // ==================== API URL ====================
-    // Auto-detect environment - works on localhost, Netlify, Cloudflare
-    const API_URL = (() => {
-        // Netlify Functions
-        if (window.location.hostname.includes('netlify.app')) {
-            return '/.netlify/functions/api';
-        }
-        // Cloudflare Workers
-        if (window.location.hostname.includes('workers.dev')) {
-            return 'https://smartclass-analytics.workers.dev/api';
-        }
-        // Local development
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-            return 'http://localhost:8888/.netlify/functions/api';
-        }
-        // Production fallback
-        return '/.netlify/functions/api';
-    })();
-
-    console.log('API URL:', API_URL);
+    // ==================== API URL - Uses same domain ====================
+    const API_BASE = '';
 
     // ==================== SIGNUP FUNCTION ====================
     document.getElementById('signupForm').addEventListener('submit', async (e) => {
@@ -399,7 +382,7 @@
         submitBtn.disabled = true;
         
         try {
-            const response = await fetch(`${API_URL}/signup`, {
+            const response = await fetch(`${API_BASE}/api/signup`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ fullname, email, school, subject, password })
@@ -408,7 +391,7 @@
             const data = await response.json();
             
             if (data.success) {
-                document.getElementById('signupSuccess').textContent = 'Account created successfully! Please login.';
+                document.getElementById('signupSuccess').textContent = data.message || 'Account created successfully! Please login.';
                 document.getElementById('signupSuccess').classList.remove('hidden');
                 
                 // Clear form
@@ -428,7 +411,7 @@
             }
         } catch (error) {
             console.error('Signup error:', error);
-            showError('signupError', 'Connection error. Please try again.');
+            showError('signupError', 'Connection error. Please check your internet and try again.');
         } finally {
             submitBtn.innerHTML = originalText;
             submitBtn.disabled = false;
@@ -455,7 +438,7 @@
         submitBtn.disabled = true;
         
         try {
-            const response = await fetch(`${API_URL}/login`, {
+            const response = await fetch(`${API_BASE}/api/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
@@ -469,23 +452,23 @@
                 localStorage.setItem('teacherEmail', email);
                 window.location.href = 'dashboard.html';
             } else {
-                showError('loginError', data.message || 'Invalid credentials');
+                showError('loginError', data.message || 'Invalid email or password');
             }
         } catch (error) {
             console.error('Login error:', error);
-            showError('loginError', 'Connection error. Please try again.');
+            showError('loginError', 'Connection error. Please check your internet and try again.');
         } finally {
             submitBtn.innerHTML = originalText;
             submitBtn.disabled = false;
         }
     });
 
-    // Helper functions
+    // ==================== HELPER FUNCTIONS ====================
     function showError(elementId, message) {
         const errorDiv = document.getElementById(elementId);
         errorDiv.textContent = message;
         errorDiv.classList.remove('hidden');
-        setTimeout(() => errorDiv.classList.add('hidden'), 3000);
+        setTimeout(() => errorDiv.classList.add('hidden'), 4000);
     }
 </script>
 </body>
