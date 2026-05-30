@@ -1,17 +1,28 @@
 {
   "name": "smartclass-analytics",
   "version": "2.0.0",
-  "description": "Teacher Performance Management System for Rwanda",
-  "main": "backend/api.js",
+  "description": "Professional Teacher Performance Management System for Rwanda",
+  "main": "functions/api.js",
+  "type": "module",
   "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy",
-    "preview": "wrangler dev",
-    "db:init": "wrangler d1 execute smartclass-db --file=backend/schema.sql"
+    "dev": "wrangler pages dev . --port 8788",
+    "deploy": "wrangler pages deploy . --project-name=smartclass-analytics",
+    "preview": "wrangler pages dev . --port 8788 --live-reload",
+    "build": "echo 'No build step required'"
   },
+  "keywords": [
+    "education",
+    "teacher",
+    "analytics",
+    "rwanda",
+    "school-management"
+  ],
   "author": "ALLAN",
   "license": "MIT",
   "devDependencies": {
-    "wrangler": "^3.0.0"
+    "wrangler": "^3.114.17"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
