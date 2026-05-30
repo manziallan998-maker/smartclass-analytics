@@ -1,21 +1,31 @@
 name = "smartclass-analytics"
-main = "backend/api.js"
-compatibility_date = "2026-01-01"
+main = "functions/api.js"
+compatibility_date = "2026-05-30"
 
-# D1 Database
-[[d1_databases]]
-binding = "DB"
-database_name = "smartclass-db"
-database_id = "YOUR_DATABASE_ID_HERE"
+# Pages configuration
+[pages]
+  build_command = ""
+  output_dir = "."
 
 # Environment variables
 [vars]
-JWT_SECRET = "smartclass-secret-key-2026-change-this"
-
-# Assets - serve static files
-[assets]
-directory = "."
-binding = "ASSETS"
+  ENVIRONMENT = "production"
+  APP_VERSION = "2.0.0"
 
 # Enable Node.js compatibility
 compatibility_flags = ["nodejs_compat"]
+
+# Assets configuration (static files)
+[assets]
+  directory = "."
+  binding = "ASSETS"
+
+# Routes configuration
+[[routes]]
+  pattern = "/api/*"
+  script = "smartclass-analytics"
+
+# Observability
+[observability]
+  enabled = true
+  head_sampling_rate = 1.0
