@@ -202,10 +202,13 @@
                     <div class="settings-info"><h4>📈 Predictive Insights</h4><p>AI-powered performance predictions</p></div>
                     <div class="toggle-switch feature-toggle" data-feature="predictiveInsights"></div>
                 </div>
-                <div class="settings-item">
-                    <div class="settings-info"><h4>👥 Smart Groups</h4><p>Auto-create balanced study groups</p></div>
-                    <div class="toggle-switch feature-toggle" data-feature="smartGroups"></div>
-                </div>
+           <div class="settings-item" id="featureSmartGroups">
+    <div class="settings-info">
+        <h4>👥 Smart Groups</h4>
+        <p>Auto-create balanced study groups (Enable/Disable)</p>
+    </div>
+    <div class="toggle-switch" id="smartGroupsToggle"></div>
+</div>
                 <div class="settings-item">
                     <div class="settings-info"><h4>🏆 Competition Mode</h4><p>Gamification and leaderboards</p></div>
                     <div class="toggle-switch feature-toggle" data-feature="competitionMode"></div>
@@ -312,7 +315,16 @@
             themeManager.updateSetting('darkMode', darkModeToggle.classList.contains('active'));
             updatePreview();
         });
-        
+        // Smart Groups Toggle
+const smartGroupsToggle = document.getElementById('smartGroupsToggle');
+const smartGroupsEnabled = localStorage.getItem('feature_smartGroups') !== 'false';
+if (smartGroupsEnabled) smartGroupsToggle.classList.add('active');
+
+smartGroupsToggle?.addEventListener('click', () => {
+    smartGroupsToggle.classList.toggle('active');
+    localStorage.setItem('feature_smartGroups', smartGroupsToggle.classList.contains('active'));
+    showToast(`Smart Groups ${smartGroupsToggle.classList.contains('active') ? 'enabled' : 'disabled'}`, 'info');
+});
         // Feature toggles
         document.querySelectorAll('.feature-toggle').forEach(toggle => {
             const feature = toggle.dataset.feature;
