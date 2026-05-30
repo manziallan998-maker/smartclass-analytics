@@ -25,3 +25,11 @@ Thumbs.db
 
 # Logs
 *.log
+node_modules/
+bun.lockb
+package-lock.json
+.wrangler/
+node_modules/
+bun.lockb
+package-lock.json
+.wrangler/
