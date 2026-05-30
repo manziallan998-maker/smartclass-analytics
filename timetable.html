@@ -24,13 +24,262 @@
     </style>
 </head>
 <body>
+        <!-- ==================== SIDEBAR & HEADER ==================== -->
+    <style>
+        /* Sidebar and Header Styles - Add if missing */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 280px;
+            background: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 100;
+            transition: transform 0.3s ease;
+            border-right: 1px solid #222222;
+        }
+        .sidebar.collapsed { transform: translateX(-280px); }
+        .sidebar-header { padding: 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222222; }
+        .logo { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 700; color: #FF6600; }
+        .close-sidebar { background: none; border: none; color: #666; cursor: pointer; font-size: 20px; }
+        .sidebar-nav { flex: 1; padding: 24px 16px; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; margin-bottom: 4px; color: #ccc; text-decoration: none; border-radius: 12px; transition: all 0.3s; }
+        .nav-item:hover { background: rgba(255, 102, 0, 0.1); color: #FF6600; }
+        .nav-item.active { background: rgba(255, 102, 0, 0.15); color: #FF6600; border-left: 3px solid #FF6600; }
+        .sidebar-footer { padding: 20px; border-top: 1px solid #222; }
+        .teacher-info { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+        .avatar { width: 40px; height: 40px; background: rgba(255,102,0,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #FF6600; }
+        .info .name { font-weight: 600; font-size: 14px; }
+        .info .email { font-size: 12px; color: #666; }
+        .logout-btn { width: 100%; padding: 10px; background: rgba(239,68,68,0.1); border: 1px solid #EF4444; border-radius: 8px; color: #EF4444; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; }
+        .logout-btn:hover { background: #EF4444; color: white; }
+        .main-content { flex: 1; margin-left: 280px; transition: margin-left 0.3s ease; min-height: 100vh; }
+        .main-content.expanded { margin-left: 0; }
+        .top-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 32px; background: #0a0a0a; border-bottom: 1px solid #222; position: sticky; top: 0; z-index: 50; }
+        .menu-toggle { background: none; border: none; color: white; font-size: 24px; cursor: pointer; display: none; }
+        .header-title h1 { font-size: 24px; font-weight: 600; margin-bottom: 4px; }
+        .header-title p { color: #888; font-size: 14px; }
+        .header-actions { display: flex; align-items: center; gap: 16px; }
+        .notifications-btn { background: none; border: none; color: white; font-size: 20px; cursor: pointer; position: relative; }
+        .notifications-btn .badge { position: absolute; top: 0; right: 0; background: #EF4444; font-size: 10px; padding: 2px 6px; border-radius: 10px; }
+        .theme-toggle button { background: none; border: none; color: white; font-size: 20px; cursor: pointer; }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-280px); }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .menu-toggle { display: block; }
+            .top-header { padding: 12px 16px; }
+            .header-title h1 { font-size: 18px; }
+        }
+        body.light-theme .sidebar { background: #fff; border-right-color: #ddd; }
+        body.light-theme .nav-item { color: #333; }
+        body.light-theme .top-header { background: #fff; border-bottom-color: #ddd; }
+        body.light-theme .top-header h1, body.light-theme .top-header p { color: #333; }
+    </style>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo"><i class="fas fa-chalkboard-user"></i><span>SMARTCLASS</span></div>
+                <button class="close-sidebar" id="closeSidebar"><i class="fas fa-times"></i></button>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i><span>Dashboard</span></a>
+                <a href="classes.html" class="nav-item"><i class="fas fa-book"></i><span>Classes</span></a>
+                <a href="groups.html" class="nav-item"><i class="fas fa-users"></i><span>Smart Groups</span></a>
+                <a href="analytics.html" class="nav-item"><i class="fas fa-chart-line"></i><span>Analytics</span></a>
+                <a href="predict.html" class="nav-item"><i class="fas fa-brain"></i><span>Predict</span></a>
+                <a href="lesson-planner.html" class="nav-item"><i class="fas fa-calendar-alt"></i><span>Lesson Planner</span></a>
+                <a href="timetable.html" class="nav-item"><i class="fas fa-clock"></i><span>Timetable</span></a>
+                <a href="reports.html" class="nav-item"><i class="fas fa-file-alt"></i><span>Reports</span></a>
+                <a href="compete.html" class="nav-item"><i class="fas fa-trophy"></i><span>Compete</span></a>
+                <a href="backup.html" class="nav-item"><i class="fas fa-database"></i><span>Backup</span></a>
+                <a href="settings.html" class="nav-item"><i class="fas fa-cog"></i><span>Settings</span></a>
+                <a href="help.html" class="nav-item"><i class="fas fa-question-circle"></i><span>Help</span></a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="teacher-info">
+                    <div class="avatar"><i class="fas fa-user"></i></div>
+                    <div class="info">
+                        <p class="name" id="teacherName">Teacher</p>
+                        <p class="email" id="teacherEmail">teacher@school.rw</p>
+                    </div>
+                </div>
+                <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i><span>Logout</span></button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+                <div class="header-title">
+                    <h1 id="pageTitle">SmartClass Analytics</h1>
+                    <p id="pageSubtitle">Teacher Management System</p>
+                </div>
+                <div class="header-actions">
+                    <div class="notifications-wrapper">
+                        <button class="notifications-btn" id="notificationsBtn">
+                            <i class="fas fa-bell"></i>
+                            <span class="badge" id="notificationBadge">3</span>
+                        </button>
+                    </div>
+                    <div class="theme-toggle">
+                        <button id="themeToggle"><i class="fas fa-moon"></i></button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- YOUR PAGE CONTENT GOES HERE -->
+            <div id="pageContent">
+                <!-- The existing content of your page will be moved here -->
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // ==================== SIDEBAR & HEADER FUNCTIONALITY ====================
+        
+        // Set active nav item based on current page
+        function setActiveNav() {
+            const currentPage = window.location.pathname.split('/').pop();
+            document.querySelectorAll('.nav-item').forEach(item => {
+                const href = item.getAttribute('href');
+                if (href === currentPage || (currentPage === '' && href === 'dashboard.html')) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+        
+        // Set page title
+        function setPageTitle() {
+            const currentPage = window.location.pathname.split('/').pop();
+            const titles = {
+                'dashboard.html': { title: 'Dashboard', subtitle: 'Overview of your classes' },
+                'classes.html': { title: 'Classes', subtitle: 'Manage your classes and students' },
+                'groups.html': { title: 'Smart Groups', subtitle: 'Create balanced study groups' },
+                'analytics.html': { title: 'Analytics', subtitle: 'Performance analysis' },
+                'predict.html': { title: 'Predictive Insights', subtitle: 'AI-powered predictions' },
+                'lesson-planner.html': { title: 'Lesson Planner', subtitle: 'Schedule your lessons' },
+                'timetable.html': { title: 'Timetable', subtitle: 'Weekly schedule view' },
+                'reports.html': { title: 'Reports', subtitle: 'Generate official reports' },
+                'compete.html': { title: 'Competition', subtitle: 'Leaderboards & achievements' },
+                'backup.html': { title: 'Backup', subtitle: 'Protect your data' },
+                'settings.html': { title: 'Settings', subtitle: 'Customize your experience' },
+                'help.html': { title: 'Help', subtitle: 'Guides & support' }
+            };
+            const pageInfo = titles[currentPage] || titles['dashboard.html'];
+            const titleEl = document.getElementById('pageTitle');
+            const subtitleEl = document.getElementById('pageSubtitle');
+            if (titleEl) titleEl.textContent = pageInfo.title;
+            if (subtitleEl) subtitleEl.textContent = pageInfo.subtitle;
+        }
+        
+        // Load teacher info
+        function loadTeacherInfo() {
+            const teacherName = localStorage.getItem('teacherName');
+            const teacherEmail = localStorage.getItem('teacherEmail');
+            if (teacherName) {
+                document.querySelectorAll('#teacherName').forEach(el => { if (el) el.textContent = teacherName; });
+            }
+            if (teacherEmail) {
+                document.querySelectorAll('#teacherEmail').forEach(el => { if (el) el.textContent = teacherEmail; });
+            }
+        }
+        
+        // Logout function
+        function logout() {
+            localStorage.removeItem('teacherToken');
+            localStorage.removeItem('teacherName');
+            localStorage.removeItem('teacherEmail');
+            window.location.href = 'index.html';
+        }
+        
+        // Theme toggle
+        function initTheme() {
+            const isDark = localStorage.getItem('theme') !== 'light';
+            if (!isDark) document.body.classList.add('light-theme');
+            const themeBtn = document.getElementById('themeToggle');
+            if (themeBtn) {
+                themeBtn.addEventListener('click', () => {
+                    document.body.classList.toggle('light-theme');
+                    localStorage.setItem('theme', document.body.classList.contains('light-theme') ? 'light' : 'dark');
+                });
+            }
+        }
+        
+        // Sidebar toggle for mobile
+        function initSidebarToggle() {
+            const menuToggle = document.getElementById('menuToggle');
+            const closeSidebar = document.getElementById('closeSidebar');
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.querySelector('.main-content');
+            
+            if (menuToggle) {
+                menuToggle.addEventListener('click', () => {
+                    sidebar.classList.toggle('open');
+                });
+            }
+            if (closeSidebar) {
+                closeSidebar.addEventListener('click', () => {
+                    sidebar.classList.remove('open');
+                    if (window.innerWidth > 768) {
+                        sidebar.classList.add('collapsed');
+                        mainContent.classList.add('expanded');
+                    }
+                });
+            }
+        }
+        
+        // Notifications
+        function initNotifications() {
+            const notifBtn = document.getElementById('notificationsBtn');
+            if (notifBtn) {
+                notifBtn.addEventListener('click', () => {
+                    alert('📋 Notifications:\n\n• Check your classes\n• Update student marks\n• Generate reports');
+                });
+            }
+        }
+        
+        // Check authentication
+        function checkAuth() {
+            const token = localStorage.getItem('teacherToken');
+            if (!token && !window.location.pathname.includes('index.html')) {
+                window.location.href = 'index.html';
+                return false;
+            }
+            return true;
+        }
+        
+        // Initialize everything
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!checkAuth()) return;
+            setActiveNav();
+            setPageTitle();
+            loadTeacherInfo();
+            initTheme();
+            initSidebarToggle();
+            initNotifications();
+            
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) logoutBtn.addEventListener('click', logout);
+        });
+    </script>
+</body>
+</html>
 
 <div class="app-container">
-    <aside class="sidebar" id="sidebar">[... same sidebar ...]</aside>
-
-    <main class="main-content">
-        <header class="top-header">[... same header ...]</header>
-
+   
         <div class="section">
             <div class="section-header">
                 <h2><i class="fas fa-calendar-week"></i> Weekly Timetable</h2>
@@ -182,3 +431,4 @@
 </script>
 </body>
 </html>
+
