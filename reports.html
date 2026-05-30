@@ -14,49 +14,56 @@
         .option-group label { display: block; margin-bottom: 8px; color: var(--text-dim); }
         .option-group select, .option-group input { width: 100%; padding: 10px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); }
         .preview-container { background: white; color: black; padding: 20px; border-radius: 12px; margin-top: 20px; display: none; overflow-x: auto; }
-        .student-report-card { border: 1px solid #ddd; padding: 20px; margin: 10px 0; border-radius: 8px; background: white; }
+        .student-report-card { border: 1px solid #ddd; padding: 20px; margin: 10px 0; border-radius: 8px; background: white; max-width: 100%; overflow-x: auto; }
         .report-header { text-align: center; border-bottom: 2px solid #FF6600; padding-bottom: 16px; margin-bottom: 16px; }
-        .report-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
+        .report-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; flex-wrap: wrap; }
         .report-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
         .report-table th, .report-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
         .report-table th { background: #f5f5f5; }
         @media print { .sidebar, .top-header, .report-card, .btn { display: none; } .preview-container { display: block !important; margin: 0; padding: 0; } }
+        @media (max-width: 768px) { .report-options { grid-template-columns: 1fr; } .report-row { flex-direction: column; gap: 5px; } }
     </style>
 </head>
 <body>
 
 <div class="app-container">
-    <aside class="sidebar" id="sidebar">[... same sidebar ...]</aside>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header"><div class="logo"><i class="fas fa-chalkboard-user"></i><span>SMARTCLASS</span></div><button class="close-sidebar" id="closeSidebar"><i class="fas fa-times"></i></button></div>
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i><span>Dashboard</span></a>
+            <a href="classes.html" class="nav-item"><i class="fas fa-book"></i><span>Classes</span></a>
+            <a href="groups.html" class="nav-item"><i class="fas fa-users"></i><span>Smart Groups</span></a>
+            <a href="analytics.html" class="nav-item"><i class="fas fa-chart-line"></i><span>Analytics</span></a>
+            <a href="predict.html" class="nav-item"><i class="fas fa-brain"></i><span>Predict</span></a>
+            <a href="lesson-planner.html" class="nav-item"><i class="fas fa-calendar-alt"></i><span>Lesson Planner</span></a>
+            <a href="timetable.html" class="nav-item"><i class="fas fa-clock"></i><span>Timetable</span></a>
+            <a href="reports.html" class="nav-item active"><i class="fas fa-file-alt"></i><span>Reports</span></a>
+            <a href="compete.html" class="nav-item"><i class="fas fa-trophy"></i><span>Compete</span></a>
+            <a href="backup.html" class="nav-item"><i class="fas fa-database"></i><span>Backup</span></a>
+            <a href="settings.html" class="nav-item"><i class="fas fa-cog"></i><span>Settings</span></a>
+            <a href="help.html" class="nav-item"><i class="fas fa-question-circle"></i><span>Help</span></a>
+        </nav>
+        <div class="sidebar-footer"><div class="teacher-info"><div class="avatar"><i class="fas fa-user"></i></div><div class="info"><p class="name" id="teacherName">Teacher</p><p class="email" id="teacherEmail">teacher@school.rw</p></div></div><button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i><span>Logout</span></button></div>
+    </aside>
 
     <main class="main-content">
-        <header class="top-header">[... same header ...]</header>
+        <header class="top-header">
+            <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+            <div class="header-title"><h1>Reports Center</h1><p>Generate official reports</p></div>
+            <div class="header-actions"><button class="notifications-btn" id="notificationsBtn"><i class="fas fa-bell"></i><span class="badge">3</span></button><div class="theme-toggle"><button id="themeToggle"><i class="fas fa-moon"></i></button></div></div>
+        </header>
 
         <div class="section">
-            <div class="section-header">
-                <h2><i class="fas fa-file-alt"></i> Reports Center</h2>
-                <p>Generate official reports for school administration</p>
-            </div>
-
             <div class="report-card">
-                <h3 style="margin-bottom: 16px;">Select Report Type</h3>
+                <h3 style="margin-bottom:16px;">Select Report Type</h3>
                 <div class="report-options">
-                    <div class="option-group"><label>Report Type</label><select id="reportType">
-                        <option value="class_summary">Class Summary Report</option>
-                        <option value="student_report_card">Student Report Card</option>
-                        <option value="term_report">Term Performance Report</option>
-                        <option value="sdms_export">SDMS Compatible Export</option>
-                    </select></div>
+                    <div class="option-group"><label>Report Type</label><select id="reportType"><option value="class_summary">Class Summary Report</option><option value="student_report_card">Student Report Card</option><option value="term_report">Term Performance Report</option><option value="sdms_export">SDMS Compatible Export</option></select></div>
                     <div class="option-group"><label>Select Class</label><select id="reportClass"></select></div>
                     <div class="option-group"><label>Select Term</label><select id="reportTerm"><option value="1">Term 1</option><option value="2">Term 2</option><option value="3" selected>Term 3</option></select></div>
                     <div class="option-group"><label>Academic Year</label><input type="text" id="academicYear" value="2026"></div>
                 </div>
-                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                    <button class="btn-primary" id="generateReportBtn"><i class="fas fa-chart-line"></i> Generate</button>
-                    <button class="btn-secondary" id="exportPdfBtn"><i class="fas fa-file-pdf"></i> Export PDF</button>
-                    <button class="btn-secondary" id="printReportBtn"><i class="fas fa-print"></i> Print</button>
-                </div>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;"><button class="btn-primary" id="generateReportBtn"><i class="fas fa-chart-line"></i> Generate</button><button class="btn-secondary" id="exportPdfBtn"><i class="fas fa-file-pdf"></i> Export PDF</button><button class="btn-secondary" id="printReportBtn"><i class="fas fa-print"></i> Print</button></div>
             </div>
-
             <div id="reportPreview" class="preview-container"></div>
         </div>
     </main>
@@ -68,13 +75,15 @@
     function loadData() {
         allClasses = JSON.parse(localStorage.getItem('classes') || '[]');
         allStudents = JSON.parse(localStorage.getItem('students') || '[]');
-        if (allClasses.length === 0) allClasses = [{ id: "cls_001", name: "Physics S4A" }, { id: "cls_002", name: "Physics S3B" }];
+        if (allClasses.length === 0) allClasses = [{ id: "cls_001", name: "Physics S4A" }, { id: "cls_002", name: "Physics S3B" }, { id: "cls_003", name: "Physics S3A" }];
         if (allStudents.length === 0) allStudents = [
             { id: "stu_001", classId: "cls_001", name: "UWAMAHORO Eric", term1: 82, term2: 88, term3: 94, registrationNumber: "2024001" },
-            { id: "stu_002", classId: "cls_001", name: "MUKAMANA Grace", term1: 45, term2: 58, term3: 71, registrationNumber: "2024002" }
+            { id: "stu_002", classId: "cls_001", name: "IRADUKUNDA Diane", term1: 85, term2: 89, term3: 91, registrationNumber: "2024002" },
+            { id: "stu_003", classId: "cls_001", name: "MUKAMANA Grace", term1: 45, term2: 58, term3: 71, registrationNumber: "2024003" },
+            { id: "stu_004", classId: "cls_001", name: "NDAYISABA Pierre", term1: 38, term2: 42, term3: 41, registrationNumber: "2024004" }
         ];
         const select = document.getElementById('reportClass');
-        select.innerHTML = allClasses.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        if(select) select.innerHTML = allClasses.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
     }
 
     function getClassStudents(classId) { return allStudents.filter(s => s.classId === classId); }
@@ -86,13 +95,11 @@
         const year = document.getElementById('academicYear').value;
         const className = allClasses.find(c => c.id === classId)?.name || 'Class';
         const students = getClassStudents(classId);
-        
         let html = '';
         if (type === 'class_summary') html = generateClassSummary(className, term, year, students);
         else if (type === 'student_report_card') html = generateReportCards(className, term, year, students);
         else if (type === 'term_report') html = generateTermReport(className, term, year, students);
         else if (type === 'sdms_export') html = generateSDMSExport(className, term, year, students);
-        
         const preview = document.getElementById('reportPreview');
         preview.style.display = 'block';
         preview.innerHTML = html;
@@ -106,37 +113,32 @@
         const passing = scores.filter(s => s >= 50).length;
         const passingRate = (passing / (students.length || 1) * 100).toFixed(1);
         const grades = { A: scores.filter(s => s >= 90).length, B: scores.filter(s => s >= 80 && s < 90).length, C: scores.filter(s => s >= 70 && s < 80).length, D: scores.filter(s => s >= 50 && s < 70).length, F: scores.filter(s => s < 50).length };
-        
-        return `<div class="student-report-card">
-            <div class="report-header"><h2>CLASS SUMMARY REPORT</h2><h3>${className}</h3><p>Term ${term} - ${year}</p></div>
+        return `<div class="student-report-card"><div class="report-header"><h2>CLASS SUMMARY REPORT</h2><h3>${className}</h3><p>Term ${term} - ${year}</p><p>Generated: ${new Date().toLocaleDateString()}</p></div>
             <div class="report-row"><strong>Total Students:</strong> ${students.length}</div>
             <div class="report-row"><strong>Class Average:</strong> ${avg.toFixed(1)}%</div>
             <div class="report-row"><strong>Highest Score:</strong> ${highest}%</div>
             <div class="report-row"><strong>Lowest Score:</strong> ${lowest}%</div>
-            <div class="report-row"><strong>Passing Rate:</strong> ${passingRate}%</div>
+            <div class="report-row"><strong>Passing Rate (≥50%):</strong> ${passingRate}%</div>
             <div class="report-row"><strong>Failing Students:</strong> ${students.length - passing}</div>
             <h4>Grade Distribution</h4>
-            <table class="report-table"><tr><th>Grade</th><th>Range</th><th>Count</th><th>%</th></tr>
-            ${Object.entries(grades).map(([g,c]) => `<tr><td>${g}</td><td>${g === 'A' ? '90-100%' : g === 'B' ? '80-89%' : g === 'C' ? '70-79%' : g === 'D' ? '50-69%' : '0-49%'}</td><td>${c}</td><td>${((c/students.length)*100).toFixed(1)}%</td></tr>`).join('')}
+            <table class="report-table"><tr><th>Grade</th><th>Range</th><th>Count</th><th>Percentage</th></tr>
+            ${Object.entries(grades).map(([g,c]) => `<tr><td><strong>${g}</strong></td><td>${g==='A'?'90-100%':g==='B'?'80-89%':g==='C'?'70-79%':g==='D'?'50-69%':'0-49%'}</td><td>${c}</td><td>${((c/students.length)*100).toFixed(1)}%</td></tr>`).join('')}
             </table>
-            <div class="report-header" style="margin-top:20px;"><p>Teacher Signature: ___________________</p></div>
+            <div class="report-header" style="margin-top:20px;"><p>Teacher Signature: ___________________</p><p>Head of Department: ___________________</p></div>
         </div>`;
     }
 
     function generateReportCards(className, term, year, students) {
-        return students.map(s => {
-            const score = s[`term${term}`] || 0;
-            const grade = score >= 90 ? 'A' : score >= 80 ? 'B' : score >= 70 ? 'C' : score >= 50 ? 'D' : 'F';
-            const remark = score >= 90 ? 'Excellent' : score >= 80 ? 'Very Good' : score >= 70 ? 'Good' : score >= 50 ? 'Satisfactory' : 'Needs Improvement';
-            return `<div class="student-report-card">
-                <div class="report-header"><h2>MINISTRY OF EDUCATION - RWANDA</h2><h3>STUDENT REPORT CARD</h3><p>${year} - Term ${term}</p></div>
-                <div class="report-row"><strong>Student:</strong> ${s.name}</div>
-                <div class="report-row"><strong>Reg No:</strong> ${s.registrationNumber || 'N/A'}</div>
+        return students.map(s => { const score = s[`term${term}`] || 0; const grade = score >= 90 ? 'A' : score >= 80 ? 'B' : score >= 70 ? 'C' : score >= 50 ? 'D' : 'F'; const remark = score >= 90 ? 'Excellent' : score >= 80 ? 'Very Good' : score >= 70 ? 'Good' : score >= 50 ? 'Satisfactory' : 'Needs Improvement'; 
+            return `<div class="student-report-card"><div class="report-header"><h2>MINISTRY OF EDUCATION - RWANDA</h2><h3>STUDENT REPORT CARD</h3><p>${year} Academic Year - Term ${term}</p></div>
+                <div class="report-row"><strong>Student Name:</strong> ${s.name}</div>
+                <div class="report-row"><strong>Registration Number:</strong> ${s.registrationNumber || 'N/A'}</div>
                 <div class="report-row"><strong>Class:</strong> ${className}</div>
+                <div class="report-row"><strong>Subject:</strong> Physics</div>
                 <div class="report-row"><strong>Score:</strong> ${score}%</div>
                 <div class="report-row"><strong>Grade:</strong> ${grade}</div>
                 <div class="report-row"><strong>Remark:</strong> ${remark}</div>
-                <div class="report-header" style="margin-top:20px;"><p>Teacher: ___________________</p><p>Parent: ___________________</p></div>
+                <div class="report-header" style="margin-top:20px;"><p>Teacher's Comment: ___________________</p><p>Parent's Signature: ___________________</p></div>
             </div>`;
         }).join('');
     }
@@ -146,39 +148,36 @@
         const t2 = students.reduce((a,b) => a + (b.term2||0),0)/(students.length||1);
         const t3 = students.reduce((a,b) => a + (b.term3||0),0)/(students.length||1);
         const top = [...students].sort((a,b) => (b[`term${term}`]||0) - (a[`term${term}`]||0)).slice(0,5);
-        return `<div class="student-report-card">
-            <div class="report-header"><h2>TERM PERFORMANCE REPORT</h2><h3>${className}</h3><p>${year}</p></div>
+        return `<div class="student-report-card"><div class="report-header"><h2>TERM PERFORMANCE REPORT</h2><h3>${className}</h3><p>${year} Academic Year</p></div>
+            <h4>Termly Performance Trend</h4>
             <div class="report-row"><strong>Term 1 Average:</strong> ${t1.toFixed(1)}%</div>
             <div class="report-row"><strong>Term 2 Average:</strong> ${t2.toFixed(1)}%</div>
             <div class="report-row"><strong>Term 3 Average:</strong> ${t3.toFixed(1)}%</div>
-            <div class="report-row"><strong>Improvement:</strong> ${(t3 - t1).toFixed(1)}%</div>
-            <h4>Top 5 Students (Term ${term})</h4>
+            <div class="report-row"><strong>Overall Improvement:</strong> ${(t3 - t1).toFixed(1)}%</div>
+            <h4>Top Performing Students (Term ${term})</h4>
             ${top.map((s,i) => `<div class="report-row">${i+1}. ${s.name} - ${s[`term${term}`] || 0}%</div>`).join('')}
         </div>`;
     }
 
     function generateSDMSExport(className, term, year, students) {
-        return `<div class="student-report-card">
-            <div class="report-header"><h2>SDMS COMPATIBLE EXPORT</h2><p>${className} - Term ${term} - ${year}</p></div>
-            <table class="report-table"><tr><th>Reg Number</th><th>Student Name</th><th>Score</th><th>Grade</th><th>Remark</th></tr>
-            ${students.map(s => {
-                const score = s[`term${term}`] || 0;
-                const grade = score >= 90 ? 'A' : score >= 80 ? 'B' : score >= 70 ? 'C' : score >= 50 ? 'D' : 'F';
-                return `<tr><td>${s.registrationNumber || 'N/A'}</td><td>${s.name}</td><td>${score}</td><td>${grade}</td><td>${grade === 'F' ? 'Repeat' : 'Promoted'}</td></tr>`;
-            }).join('')}</table>
-            <p style="margin-top:20px;">Compatible with SDMS/Urubuto import format.</p>
+        return `<div class="student-report-card"><div class="report-header"><h2>SDMS COMPATIBLE EXPORT</h2><p>${className} - Term ${term} - ${year}</p></div>
+            <table class="report-table"><tr><th>Registration Number</th><th>Student Name</th><th>Score</th><th>Grade</th><th>Remark</th></tr>
+            ${students.map(s => { const score = s[`term${term}`] || 0; const grade = score >= 90 ? 'A' : score >= 80 ? 'B' : score >= 70 ? 'C' : score >= 50 ? 'D' : 'F'; return `<tr><td>${s.registrationNumber || 'N/A'}</td><td>${s.name}</td><td>${score}</td><td>${grade}</td><td>${grade === 'F' ? 'Repeat' : 'Promoted'}</td></tr>`; }).join('')}
+            </table>
+            <p style="margin-top:20px;">This report is compatible with SDMS/Urubuto import format.</p>
         </div>`;
     }
 
-    function exportToPdf() { alert('Click Print and select "Save as PDF"'); }
-    function showToast(msg, type) { alert(msg); }
-    function checkAuth() { if (!localStorage.getItem('teacherToken') && !window.location.pathname.includes('index.html')) { window.location.href = 'index.html'; return false; } return true; }
+    function checkAuth() {
+        if (!localStorage.getItem('teacherToken')) window.location.href = 'index.html';
+        else { const n = localStorage.getItem('teacherName'); if(n) document.querySelectorAll('#teacherName').forEach(el => el.textContent = n); }
+    }
 
     document.addEventListener('DOMContentLoaded', () => {
-        if (!checkAuth()) return;
+        checkAuth();
         loadData();
         document.getElementById('generateReportBtn')?.addEventListener('click', generateReport);
-        document.getElementById('exportPdfBtn')?.addEventListener('click', exportToPdf);
+        document.getElementById('exportPdfBtn')?.addEventListener('click', () => alert('Click Print and select "Save as PDF"'));
         document.getElementById('printReportBtn')?.addEventListener('click', () => window.print());
         document.getElementById('logoutBtn')?.addEventListener('click', () => { localStorage.clear(); window.location.href = 'index.html'; });
     });
