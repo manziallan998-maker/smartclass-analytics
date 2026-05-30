@@ -12,17 +12,12 @@
         .backup-option { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-bottom: 1px solid var(--border); }
         .backup-option:last-child { border-bottom: none; }
         .backup-icon { font-size: 32px; width: 60px; }
-        .backup-info { flex: 1; }
-        .backup-info h4 { margin-bottom: 4px; }
-        .backup-info p { font-size: 12px; color: var(--text-dim); }
-        .toggle-switch {
-            width: 50px; height: 24px; background: var(--border); border-radius: 12px; cursor: pointer; position: relative; transition: all 0.3s;
-        }
+        .toggle-switch { width: 50px; height: 24px; background: var(--border); border-radius: 12px; cursor: pointer; position: relative; transition: all 0.3s; }
         .toggle-switch.active { background: var(--accent-primary); }
         .toggle-switch::after { content: ''; width: 20px; height: 20px; background: white; border-radius: 50%; position: absolute; top: 2px; left: 4px; transition: all 0.3s; }
         .toggle-switch.active::after { left: 26px; }
-        .backup-list { max-height: 200px; overflow-y: auto; }
         .backup-file { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--bg-secondary); margin-bottom: 8px; border-radius: 8px; }
+        .danger-zone { border-color: #EF4444; }
     </style>
 </head>
 <body>
@@ -34,110 +29,88 @@
         <header class="top-header">[... same header ...]</header>
 
         <div class="section">
-            <div class="section-header"><h2><i class="fas fa-database"></i> Backup & Restore</h2><p>Secure your data with automatic and manual backups</p></div>
+            <div class="section-header"><h2><i class="fas fa-database"></i> Backup & Restore</h2></div>
 
             <div class="backup-card">
-                <h3 style="margin-bottom: 16px;">Auto Backup Settings</h3>
-                <div class="auto-backup-toggle" style="display: flex; align-items: center; gap: 16px; padding: 16px; background: var(--bg-secondary); border-radius: 12px;">
-                    <i class="fas fa-cloud-upload-alt" style="font-size: 24px;"></i>
-                    <div style="flex:1;"><strong>Automatic Daily Backup</strong><p style="font-size:12px;">Backup your data automatically every day</p></div>
-                    <div class="toggle-switch" id="autoBackupToggle"></div>
-                </div>
+                <h3>Auto Backup</h3>
+                <div class="backup-option"><div class="backup-icon"><i class="fas fa-clock"></i></div><div class="backup-info"><h4>Automatic Daily Backup</h4><p>Backup data automatically every day</p></div><div class="toggle-switch" id="autoBackupToggle"></div></div>
             </div>
 
             <div class="backup-card">
-                <h3 style="margin-bottom: 16px;">Manual Backup</h3>
-                <div class="backup-option"><div class="backup-icon"><i class="fas fa-download"></i></div><div class="backup-info"><h4>Export All Data</h4><p>Download complete database backup as JSON file</p></div><button class="btn-primary" id="exportBackupBtn">Export</button></div>
-                <div class="backup-option"><div class="backup-icon"><i class="fas fa-upload"></i></div><div class="backup-info"><h4>Import Backup</h4><p>Restore from previously exported backup file</p></div><button class="btn-secondary" id="importBackupBtn">Import</button><input type="file" id="importFile" accept=".json" style="display: none;"></div>
+                <h3>Manual Backup</h3>
+                <div class="backup-option"><div class="backup-icon"><i class="fas fa-download"></i></div><div class="backup-info"><h4>Export All Data</h4><p>Download complete backup as JSON</p></div><button class="btn-primary" id="exportBtn">Export</button></div>
+                <div class="backup-option"><div class="backup-icon"><i class="fas fa-upload"></i></div><div class="backup-info"><h4>Import Backup</h4><p>Restore from backup file</p></div><button class="btn-secondary" id="importBtn">Import</button><input type="file" id="importFile" accept=".json" style="display:none;"></div>
             </div>
 
             <div class="backup-card">
-                <h3 style="margin-bottom: 16px;"><i class="fas fa-history"></i> Backup History</h3>
-                <div class="backup-list" id="backupHistory"></div>
-                <button class="btn-secondary" id="clearHistoryBtn" style="margin-top: 16px; width: 100%;">Clear History</button>
+                <h3><i class="fas fa-history"></i> Backup History</h3>
+                <div id="backupHistory"></div>
+                <button class="btn-secondary" id="clearHistoryBtn" style="margin-top:16px; width:100%;">Clear History</button>
             </div>
 
-            <div class="backup-card danger-zone" style="border-color: #EF4444;">
-                <h3 style="margin-bottom: 16px; color: #EF4444;"><i class="fas fa-exclamation-triangle"></i> Danger Zone</h3>
-                <div class="backup-option"><div class="backup-icon"><i class="fas fa-trash-alt" style="color: #EF4444;"></i></div><div class="backup-info"><h4>Clear All Data</h4><p>⚠️ Permanently delete all your data (cannot be undone)</p></div><button class="btn-secondary" id="clearAllDataBtn" style="background: #EF4444;">Clear All</button></div>
+            <div class="backup-card danger-zone">
+                <h3 style="color:#EF4444;"><i class="fas fa-exclamation-triangle"></i> Danger Zone</h3>
+                <div class="backup-option"><div class="backup-icon"><i class="fas fa-trash-alt" style="color:#EF4444;"></i></div><div class="backup-info"><h4>Clear All Data</h4><p>Permanently delete ALL data</p></div><button class="btn-secondary" id="clearAllBtn" style="background:#EF4444;">Clear All</button></div>
             </div>
         </div>
     </main>
 </div>
 
-<script src="js/auth.js"></script>
-<script src="js/theme.js"></script>
-<script src="js/storage.js"></script>
-<script src="js/app.js"></script>
 <script>
     let backupHistory = JSON.parse(localStorage.getItem('backupHistory') || '[]');
-    let autoBackupEnabled = localStorage.getItem('autoBackupEnabled') === 'true';
+    let autoBackup = localStorage.getItem('autoBackup') === 'true';
 
-    document.addEventListener('DOMContentLoaded', () => {
-        loadBackupHistory();
-        setupEventListeners();
-        setupAutoBackup();
-        document.getElementById('autoBackupToggle')?.classList[autoBackupEnabled ? 'add' : 'remove']('active');
-    });
-
-    function setupEventListeners() {
-        document.getElementById('exportBackupBtn')?.addEventListener('click', exportAllData);
-        document.getElementById('importBackupBtn')?.addEventListener('click', () => document.getElementById('importFile').click());
-        document.getElementById('importFile')?.addEventListener('change', importBackup);
-        document.getElementById('clearHistoryBtn')?.addEventListener('click', clearHistory);
-        document.getElementById('clearAllDataBtn')?.addEventListener('click', clearAllData);
-        document.getElementById('autoBackupToggle')?.addEventListener('click', toggleAutoBackup);
+    function saveBackupHistory() { localStorage.setItem('backupHistory', JSON.stringify(backupHistory)); }
+    function loadHistory() {
+        const container = document.getElementById('backupHistory');
+        container.innerHTML = backupHistory.map(h => `<div class="backup-file"><span><i class="fas fa-database"></i> ${h.entry}</span><span>${new Date(h.date).toLocaleString()}</span></div>`).join('');
+        if (!backupHistory.length) container.innerHTML = '<div style="text-align:center;padding:20px;">No backups yet</div>';
     }
+    function addHistory(entry) { backupHistory.unshift({ date: new Date().toISOString(), entry }); backupHistory = backupHistory.slice(0, 20); saveBackupHistory(); loadHistory(); }
 
-    function exportAllData() {
-        const allData = storage.exportAllData();
-        const dataStr = JSON.stringify(allData, null, 2);
-        const blob = new Blob([dataStr], { type: 'application/json' });
+    function exportData() {
+        const data = { classes: JSON.parse(localStorage.getItem('classes') || '[]'), students: JSON.parse(localStorage.getItem('students') || '[]'), lessonPlans: JSON.parse(localStorage.getItem('lessonPlans') || '[]'), settings: { theme: localStorage.getItem('theme') }, exportDate: new Date().toISOString() };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
         link.download = `smartclass_backup_${new Date().toISOString().split('T')[0]}.json`;
         link.click();
-        addToBackupHistory(`Manual backup created on ${new Date().toLocaleString()}`);
-        showToast('Backup exported successfully!', 'success');
+        addHistory(`Manual backup created`);
+        alert('Backup exported!');
     }
 
-    function importBackup(event) {
-        const file = event.target.files[0];
-        if (!file) return;
+    function importData(file) {
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = e => {
             try {
-                const backupData = JSON.parse(e.target.result);
-                if (confirm('Restoring will replace current data. Continue?')) {
-                    storage.importAllData(backupData);
-                    addToBackupHistory(`Restored from backup dated ${backupData.exportDate}`);
-                    showToast('Backup restored successfully! Page will reload.', 'success');
-                    setTimeout(() => location.reload(), 1500);
-                }
-            } catch (error) { alert('Invalid backup file'); }
+                const data = JSON.parse(e.target.result);
+                if (data.classes) localStorage.setItem('classes', JSON.stringify(data.classes));
+                if (data.students) localStorage.setItem('students', JSON.stringify(data.students));
+                if (data.lessonPlans) localStorage.setItem('lessonPlans', JSON.stringify(data.lessonPlans));
+                if (data.settings?.theme) localStorage.setItem('theme', data.settings.theme);
+                addHistory(`Restored from backup dated ${data.exportDate || 'unknown'}`);
+                alert('Restore successful! Page will reload.');
+                location.reload();
+            } catch (err) { alert('Invalid backup file'); }
         };
         reader.readAsText(file);
     }
 
-    function addToBackupHistory(entry) {
-        backupHistory.unshift({ date: new Date().toISOString(), entry });
-        backupHistory = backupHistory.slice(0, 10);
-        localStorage.setItem('backupHistory', JSON.stringify(backupHistory));
-        loadBackupHistory();
-    }
+    function clearAllData() { if (confirm('DELETE ALL DATA? Type "DELETE" to confirm') && prompt('Type "DELETE":') === 'DELETE') { localStorage.clear(); alert('All data cleared'); location.reload(); } }
+    function clearHistory() { if (confirm('Clear backup history?')) { backupHistory = []; saveBackupHistory(); loadHistory(); } }
+    function toggleAutoBackup() { autoBackup = !autoBackup; localStorage.setItem('autoBackup', autoBackup); document.getElementById('autoBackupToggle').classList.toggle('active'); if (autoBackup) setInterval(() => { if (new Date().getHours() === 20) exportData(); }, 3600000); }
 
-    function loadBackupHistory() {
-        const container = document.getElementById('backupHistory');
-        container.innerHTML = backupHistory.map(h => `<div class="backup-file"><span><i class="fas fa-database"></i> ${h.entry}</span><span style="font-size:12px;color:var(--text-dim);">${new Date(h.date).toLocaleString()}</span></div>`).join('');
-        if (backupHistory.length === 0) container.innerHTML = '<div style="text-align: center; padding: 20px;">No backups yet</div>';
-    }
-
-    function clearHistory() { if (confirm('Clear backup history?')) { backupHistory = []; localStorage.setItem('backupHistory', '[]'); loadBackupHistory(); } }
-    function clearAllData() { if (confirm('⚠️ WARNING: This will delete ALL your data! Type "DELETE" to confirm.')) { if (prompt('Type "DELETE" to confirm:') === 'DELETE') { storage.clearAllData(); showToast('All data cleared', 'warning'); setTimeout(() => location.reload(), 1500); } } }
-    function toggleAutoBackup() { autoBackupEnabled = !autoBackupEnabled; localStorage.setItem('autoBackupEnabled', autoBackupEnabled); document.getElementById('autoBackupToggle').classList.toggle('active'); if (autoBackupEnabled) scheduleAutoBackup(); }
-    function setupAutoBackup() { if (autoBackupEnabled) scheduleAutoBackup(); }
-    function scheduleAutoBackup() { setInterval(() => { if (new Date().getHours() === 20) exportAllData(); }, 3600000); }
-    function showToast(msg, type) { const toast = document.createElement('div'); toast.style.cssText = `position:fixed; bottom:20px; right:20px; background:${type === 'success' ? '#10B981' : '#FF6600'}; color:white; padding:12px 20px; border-radius:8px; z-index:1000;`; toast.textContent = msg; document.body.appendChild(toast); setTimeout(() => toast.remove(), 3000); }
+    document.addEventListener('DOMContentLoaded', () => {
+        loadHistory();
+        document.getElementById('autoBackupToggle')?.classList[autoBackup ? 'add' : 'remove']('active');
+        document.getElementById('exportBtn')?.addEventListener('click', exportData);
+        document.getElementById('importBtn')?.addEventListener('click', () => document.getElementById('importFile').click());
+        document.getElementById('importFile')?.addEventListener('change', e => importData(e.target.files[0]));
+        document.getElementById('clearHistoryBtn')?.addEventListener('click', clearHistory);
+        document.getElementById('clearAllBtn')?.addEventListener('click', clearAllData);
+        document.getElementById('autoBackupToggle')?.addEventListener('click', toggleAutoBackup);
+        document.getElementById('logoutBtn')?.addEventListener('click', () => { localStorage.clear(); window.location.href = 'index.html'; });
+    });
 </script>
 </body>
 </html>
