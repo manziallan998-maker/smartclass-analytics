@@ -1,34 +1,13 @@
-# ============================================================================
-#  WRANGLER CONFIGURATION - SMARTCLASS ANALYTICS v2.0
-# ============================================================================
-
 name = "smartclass-analytics"
 main = "functions/api.js"
 compatibility_date = "2026-05-30"
 
-# ============================================================================
-#  NODE.JS COMPATIBILITY FLAGS
-# ============================================================================
-compatibility_flags = [
-    "nodejs_compat"
-]
+compatibility_flags = ["nodejs_compat"]
 
-# ============================================================================
-#  ASSETS CONFIGURATION
-# ============================================================================
 [assets]
 directory = "."
 not_found_handling = "single-page-application"
 
-# ============================================================================
-#  OBSERVABILITY - FIXED (removed invalid tail_sampling_rate)
-# ============================================================================
-[observability]
-enabled = true
-
-# ============================================================================
-#  ENVIRONMENT VARIABLES
-# ============================================================================
 [vars]
 ENVIRONMENT = "production"
 APP_NAME = "SmartClass Analytics"
