@@ -22,33 +22,53 @@
         .student-name { font-weight: 600; }
         .student-class { font-size: 12px; color: var(--text-dim); }
         .score { font-size: 24px; font-weight: 700; color: var(--accent-primary); }
-        .class-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-top: 20px; }
+        .class-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; margin-top: 20px; }
         .class-card { background: var(--bg-card); border-radius: 16px; padding: 16px; border: 1px solid var(--border); }
         .class-card h4 { margin-bottom: 12px; color: var(--accent-primary); }
         .class-stat { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); }
-        @media (max-width: 768px) { .leaderboard-item { flex-wrap: wrap; gap: 12px; } .rank { width: 40px; } }
+        .progress-bar-small { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-top: 8px; }
+        .progress-fill-small { height: 100%; background: var(--accent-primary); border-radius: 3px; }
+        @media (max-width: 768px) { .leaderboard-item { flex-wrap: wrap; gap: 12px; } .rank { width: 40px; } .student-avatar { margin: 0 8px; } .class-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
 <div class="app-container">
-    <aside class="sidebar" id="sidebar">[... same sidebar ...]</aside>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header"><div class="logo"><i class="fas fa-chalkboard-user"></i><span>SMARTCLASS</span></div><button class="close-sidebar" id="closeSidebar"><i class="fas fa-times"></i></button></div>
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i><span>Dashboard</span></a>
+            <a href="classes.html" class="nav-item"><i class="fas fa-book"></i><span>Classes</span></a>
+            <a href="groups.html" class="nav-item"><i class="fas fa-users"></i><span>Smart Groups</span></a>
+            <a href="analytics.html" class="nav-item"><i class="fas fa-chart-line"></i><span>Analytics</span></a>
+            <a href="predict.html" class="nav-item"><i class="fas fa-brain"></i><span>Predict</span></a>
+            <a href="lesson-planner.html" class="nav-item"><i class="fas fa-calendar-alt"></i><span>Lesson Planner</span></a>
+            <a href="timetable.html" class="nav-item"><i class="fas fa-clock"></i><span>Timetable</span></a>
+            <a href="reports.html" class="nav-item"><i class="fas fa-file-alt"></i><span>Reports</span></a>
+            <a href="compete.html" class="nav-item active"><i class="fas fa-trophy"></i><span>Compete</span></a>
+            <a href="backup.html" class="nav-item"><i class="fas fa-database"></i><span>Backup</span></a>
+            <a href="settings.html" class="nav-item"><i class="fas fa-cog"></i><span>Settings</span></a>
+            <a href="help.html" class="nav-item"><i class="fas fa-question-circle"></i><span>Help</span></a>
+        </nav>
+        <div class="sidebar-footer"><div class="teacher-info"><div class="avatar"><i class="fas fa-user"></i></div><div class="info"><p class="name" id="teacherName">Teacher</p><p class="email" id="teacherEmail">teacher@school.rw</p></div></div><button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i><span>Logout</span></button></div>
+    </aside>
 
     <main class="main-content">
-        <header class="top-header">[... same header ...]</header>
+        <header class="top-header">
+            <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+            <div class="header-title"><h1>Competition Mode</h1><p>Leaderboards and achievements</p></div>
+            <div class="header-actions"><button class="notifications-btn" id="notificationsBtn"><i class="fas fa-bell"></i><span class="badge">3</span></button><div class="theme-toggle"><button id="themeToggle"><i class="fas fa-moon"></i></button></div></div>
+        </header>
 
         <div class="section">
-            <div class="section-header">
-                <h2><i class="fas fa-trophy"></i> Competition Mode</h2>
-                <select id="termSelect" class="search-input" style="width: auto;"><option value="1">Term 1</option><option value="2">Term 2</option><option value="3" selected>Term 3</option></select>
-            </div>
+            <div class="section-header"><h2><i class="fas fa-trophy"></i> Competition Mode</h2><select id="termSelect" class="search-input" style="width: auto;"><option value="1">Term 1</option><option value="2">Term 2</option><option value="3" selected>Term 3</option></select></div>
 
             <div class="badge-container" id="badgeContainer"></div>
 
-            <h3><i class="fas fa-crown"></i> Overall Leaderboard</h3>
+            <h3><i class="fas fa-crown"></i> Overall School Leaderboard</h3>
             <div class="leaderboard" id="overallLeaderboard"></div>
 
-            <h3 style="margin-top: 32px;"><i class="fas fa-chart-simple"></i> Class Competition</h3>
+            <h3 style="margin-top:32px;"><i class="fas fa-chart-simple"></i> Class Competition</h3>
             <div class="class-grid" id="classLeaderboard"></div>
         </div>
     </main>
@@ -60,11 +80,13 @@
     function loadData() {
         allClasses = JSON.parse(localStorage.getItem('classes') || '[]');
         allStudents = JSON.parse(localStorage.getItem('students') || '[]');
-        if (allClasses.length === 0) allClasses = [{ id: "cls_001", name: "Physics S4A" }, { id: "cls_002", name: "Physics S3B" }];
+        if (allClasses.length === 0) allClasses = [{ id: "cls_001", name: "Physics S4A" }, { id: "cls_002", name: "Physics S3B" }, { id: "cls_003", name: "Physics S3A" }];
         if (allStudents.length === 0) allStudents = [
             { name: "UWAMAHORO Eric", classId: "cls_001", term1: 82, term2: 88, term3: 94 },
             { name: "IRADUKUNDA Diane", classId: "cls_001", term1: 85, term2: 89, term3: 91 },
-            { name: "MUKAMANA Grace", classId: "cls_001", term1: 45, term2: 58, term3: 71 }
+            { name: "NSENGIYUMVA Jean", classId: "cls_001", term1: 80, term2: 85, term3: 88 },
+            { name: "MUKAMANA Grace", classId: "cls_001", term1: 45, term2: 58, term3: 71 },
+            { name: "NDAYISABA Pierre", classId: "cls_001", term1: 38, term2: 42, term3: 41 }
         ];
         displayLeaderboards();
     }
@@ -84,33 +106,42 @@
                 <div class="score">${s.score}%</div>
             </div>`;
         }).join('');
-        document.getElementById('overallLeaderboard').innerHTML = overallHtml || '<div style="padding:40px;text-align:center;">No data</div>';
+        document.getElementById('overallLeaderboard').innerHTML = overallHtml || '<div style="padding:40px;text-align:center;">No data available</div>';
         
         const classStats = allClasses.map(cls => {
             const students = studentsWithScore.filter(s => s.classId === cls.id);
             const avg = students.reduce((a,b) => a + b.score, 0) / (students.length || 1);
             const top = students.sort((a,b) => b.score - a.score)[0];
-            return { ...cls, avg: avg.toFixed(1), topStudent: top?.name || 'N/A', topScore: top?.score || 0, count: students.length };
+            const maxScore = 100;
+            return { ...cls, avg: avg.toFixed(1), avgPercent: (avg / maxScore) * 100, topStudent: top?.name || 'N/A', topScore: top?.score || 0, count: students.length };
         }).sort((a,b) => b.avg - a.avg);
         
-        const classHtml = classStats.map(cls => `<div class="class-card"><h4>${cls.name}</h4>
-            <div class="class-stat"><strong>Average:</strong> ${cls.avg}%</div>
+        const classHtml = classStats.map(cls => `<div class="class-card">
+            <h4>${cls.name}</h4>
+            <div class="class-stat"><strong>Class Average:</strong> ${cls.avg}%</div>
+            <div class="progress-bar-small"><div class="progress-fill-small" style="width: ${cls.avgPercent}%;"></div></div>
             <div class="class-stat"><strong>Top Student:</strong> ${cls.topStudent} (${cls.topScore}%)</div>
-            <div class="class-stat"><strong>Students:</strong> ${cls.count}</div>
+            <div class="class-stat"><strong>Total Students:</strong> ${cls.count}</div>
+            <div class="class-stat"><strong>Rank:</strong> ${classStats.indexOf(cls) + 1} of ${classStats.length}</div>
         </div>`).join('');
         document.getElementById('classLeaderboard').innerHTML = classHtml;
         
-        document.getElementById('badgeContainer').innerHTML = `
-            <div class="badge"><i class="fas fa-trophy"></i> Highest: ${sorted[0]?.name || 'N/A'} (${sorted[0]?.score || 0}%)</div>
-            <div class="badge"><i class="fas fa-chart-line"></i> Classes: ${allClasses.length}</div>
-            <div class="badge"><i class="fas fa-users"></i> Students: ${allStudents.length}</div>
-        `;
+        const badges = [
+            { icon: 'fa-trophy', text: 'Highest Score', value: `${sorted[0]?.name || 'N/A'} (${sorted[0]?.score || 0}%)` },
+            { icon: 'fa-chart-line', text: 'Top Class', value: `${classStats[0]?.name || 'N/A'} (${classStats[0]?.avg || 0}%)` },
+            { icon: 'fa-users', text: 'Total Students', value: allStudents.length.toString() },
+            { icon: 'fa-chalkboard', text: 'Total Classes', value: allClasses.length.toString() }
+        ];
+        document.getElementById('badgeContainer').innerHTML = badges.map(b => `<div class="badge"><i class="fas ${b.icon}"></i> ${b.text}: ${b.value}</div>`).join('');
     }
 
-    function checkAuth() { if (!localStorage.getItem('teacherToken') && !window.location.pathname.includes('index.html')) { window.location.href = 'index.html'; return false; } return true; }
+    function checkAuth() {
+        if (!localStorage.getItem('teacherToken')) window.location.href = 'index.html';
+        else { const n = localStorage.getItem('teacherName'); if(n) document.querySelectorAll('#teacherName').forEach(el => el.textContent = n); }
+    }
 
     document.addEventListener('DOMContentLoaded', () => {
-        if (!checkAuth()) return;
+        checkAuth();
         loadData();
         document.getElementById('termSelect')?.addEventListener('change', displayLeaderboards);
         document.getElementById('logoutBtn')?.addEventListener('click', () => { localStorage.clear(); window.location.href = 'index.html'; });
