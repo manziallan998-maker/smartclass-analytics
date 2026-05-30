@@ -1,31 +1,41 @@
+# ==================== WRANGLER CONFIGURATION ====================
+# Cloudflare Pages + Functions Configuration
+# For SmartClass Analytics v2.0
+
 name = "smartclass-analytics"
 main = "functions/api.js"
 compatibility_date = "2026-05-30"
 
-# Pages configuration
+# Pages Configuration
 [pages]
   build_command = ""
   output_dir = "."
-
-# Environment variables
+  
+# Environment Variables
 [vars]
   ENVIRONMENT = "production"
+  APP_NAME = "SmartClass Analytics"
   APP_VERSION = "2.0.0"
+  API_VERSION = "v1"
 
-# Enable Node.js compatibility
+# Node.js Compatibility
 compatibility_flags = ["nodejs_compat"]
 
-# Assets configuration (static files)
+# Assets Configuration
 [assets]
   directory = "."
   binding = "ASSETS"
 
-# Routes configuration
-[[routes]]
-  pattern = "/api/*"
-  script = "smartclass-analytics"
-
-# Observability
+# Observability (Logging & Monitoring)
 [observability]
   enabled = true
   head_sampling_rate = 1.0
+
+# Build Configuration
+[build]
+  command = ""
+  cwd = "."
+
+# Deployment Configuration
+[deploy]
+  strategy = "static"
