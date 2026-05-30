@@ -1,10 +1,16 @@
-# Node modules (DO NOT UPLOAD!)
+# Node modules - CRITICAL: DO NOT UPLOAD
 node_modules/
 npm-debug.log
 yarn-error.log
 package-lock.json
 bun.lock
 bun.lockb
+
+# Build outputs
+dist/
+build/
+.wrangler/
+.vite/
 
 # Python
 __pycache__/
@@ -15,8 +21,6 @@ __pycache__/
 *.so
 *.egg
 *.egg-info/
-dist/
-build/
 venv/
 env/
 .venv/
@@ -25,6 +29,7 @@ env/
 *.db
 *.sqlite
 *.sqlite3
+*.db-journal
 
 # IDE
 .vscode/
@@ -34,12 +39,20 @@ env/
 *~
 .DS_Store
 Thumbs.db
+desktop.ini
 
 # Logs
 *.log
 logs/
 *.tmp
 *.temp
+*.cache
 
-# Cloudflare
-.wrangler/
+# Environment
+.env
+.env.local
+.env.production
+
+# OS
+.DS_Store
+Thumbs.db
