@@ -9,37 +9,75 @@
     <link rel="stylesheet" href="css/style.css">
     <style>
         .backup-card { background: var(--bg-card); border-radius: 16px; padding: 24px; margin-bottom: 20px; border: 1px solid var(--border); }
-        .backup-option { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-bottom: 1px solid var(--border); }
+        .backup-option { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 16px; }
         .backup-option:last-child { border-bottom: none; }
         .backup-icon { font-size: 32px; width: 60px; }
+        .backup-info { flex: 1; }
+        .backup-info h4 { margin-bottom: 4px; }
+        .backup-info p { font-size: 12px; color: var(--text-dim); }
         .toggle-switch { width: 50px; height: 24px; background: var(--border); border-radius: 12px; cursor: pointer; position: relative; transition: all 0.3s; }
         .toggle-switch.active { background: var(--accent-primary); }
         .toggle-switch::after { content: ''; width: 20px; height: 20px; background: white; border-radius: 50%; position: absolute; top: 2px; left: 4px; transition: all 0.3s; }
         .toggle-switch.active::after { left: 26px; }
-        .backup-file { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--bg-secondary); margin-bottom: 8px; border-radius: 8px; }
+        .backup-file { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--bg-secondary); margin-bottom: 8px; border-radius: 8px; flex-wrap: wrap; gap: 8px; }
         .danger-zone { border-color: #EF4444; }
+        .btn-danger { background: #EF4444; color: white; }
+        .btn-danger:hover { background: #dc2626; }
+        @media (max-width: 768px) { .backup-option { flex-direction: column; text-align: center; } .backup-icon { width: auto; } .backup-file { flex-direction: column; text-align: center; } }
     </style>
 </head>
 <body>
 
 <div class="app-container">
-    <aside class="sidebar" id="sidebar">[... same sidebar ...]</aside>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header"><div class="logo"><i class="fas fa-chalkboard-user"></i><span>SMARTCLASS</span></div><button class="close-sidebar" id="closeSidebar"><i class="fas fa-times"></i></button></div>
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i><span>Dashboard</span></a>
+            <a href="classes.html" class="nav-item"><i class="fas fa-book"></i><span>Classes</span></a>
+            <a href="groups.html" class="nav-item"><i class="fas fa-users"></i><span>Smart Groups</span></a>
+            <a href="analytics.html" class="nav-item"><i class="fas fa-chart-line"></i><span>Analytics</span></a>
+            <a href="predict.html" class="nav-item"><i class="fas fa-brain"></i><span>Predict</span></a>
+            <a href="lesson-planner.html" class="nav-item"><i class="fas fa-calendar-alt"></i><span>Lesson Planner</span></a>
+            <a href="timetable.html" class="nav-item"><i class="fas fa-clock"></i><span>Timetable</span></a>
+            <a href="reports.html" class="nav-item"><i class="fas fa-file-alt"></i><span>Reports</span></a>
+            <a href="compete.html" class="nav-item"><i class="fas fa-trophy"></i><span>Compete</span></a>
+            <a href="backup.html" class="nav-item active"><i class="fas fa-database"></i><span>Backup</span></a>
+            <a href="settings.html" class="nav-item"><i class="fas fa-cog"></i><span>Settings</span></a>
+            <a href="help.html" class="nav-item"><i class="fas fa-question-circle"></i><span>Help</span></a>
+        </nav>
+        <div class="sidebar-footer"><div class="teacher-info"><div class="avatar"><i class="fas fa-user"></i></div><div class="info"><p class="name" id="teacherName">Teacher</p><p class="email" id="teacherEmail">teacher@school.rw</p></div></div><button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i><span>Logout</span></button></div>
+    </aside>
 
     <main class="main-content">
-        <header class="top-header">[... same header ...]</header>
+        <header class="top-header">
+            <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+            <div class="header-title"><h1>Backup & Restore</h1><p>Protect your data</p></div>
+            <div class="header-actions"><button class="notifications-btn" id="notificationsBtn"><i class="fas fa-bell"></i><span class="badge">3</span></button><div class="theme-toggle"><button id="themeToggle"><i class="fas fa-moon"></i></button></div></div>
+        </header>
 
         <div class="section">
-            <div class="section-header"><h2><i class="fas fa-database"></i> Backup & Restore</h2></div>
-
             <div class="backup-card">
-                <h3>Auto Backup</h3>
-                <div class="backup-option"><div class="backup-icon"><i class="fas fa-clock"></i></div><div class="backup-info"><h4>Automatic Daily Backup</h4><p>Backup data automatically every day</p></div><div class="toggle-switch" id="autoBackupToggle"></div></div>
+                <h3><i class="fas fa-clock"></i> Auto Backup Settings</h3>
+                <div class="backup-option">
+                    <div class="backup-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                    <div class="backup-info"><h4>Automatic Daily Backup</h4><p>Backup your data automatically every day at 8:00 PM</p></div>
+                    <div class="toggle-switch" id="autoBackupToggle"></div>
+                </div>
             </div>
 
             <div class="backup-card">
-                <h3>Manual Backup</h3>
-                <div class="backup-option"><div class="backup-icon"><i class="fas fa-download"></i></div><div class="backup-info"><h4>Export All Data</h4><p>Download complete backup as JSON</p></div><button class="btn-primary" id="exportBtn">Export</button></div>
-                <div class="backup-option"><div class="backup-icon"><i class="fas fa-upload"></i></div><div class="backup-info"><h4>Import Backup</h4><p>Restore from backup file</p></div><button class="btn-secondary" id="importBtn">Import</button><input type="file" id="importFile" accept=".json" style="display:none;"></div>
+                <h3><i class="fas fa-database"></i> Manual Backup</h3>
+                <div class="backup-option">
+                    <div class="backup-icon"><i class="fas fa-download"></i></div>
+                    <div class="backup-info"><h4>Export All Data</h4><p>Download complete database backup as JSON file</p></div>
+                    <button class="btn-primary" id="exportBtn">Export</button>
+                </div>
+                <div class="backup-option">
+                    <div class="backup-icon"><i class="fas fa-upload"></i></div>
+                    <div class="backup-info"><h4>Import Backup</h4><p>Restore from previously exported backup file</p></div>
+                    <button class="btn-secondary" id="importBtn">Import</button>
+                    <input type="file" id="importFile" accept=".json" style="display:none;">
+                </div>
             </div>
 
             <div class="backup-card">
@@ -50,7 +88,11 @@
 
             <div class="backup-card danger-zone">
                 <h3 style="color:#EF4444;"><i class="fas fa-exclamation-triangle"></i> Danger Zone</h3>
-                <div class="backup-option"><div class="backup-icon"><i class="fas fa-trash-alt" style="color:#EF4444;"></i></div><div class="backup-info"><h4>Clear All Data</h4><p>Permanently delete ALL data</p></div><button class="btn-secondary" id="clearAllBtn" style="background:#EF4444;">Clear All</button></div>
+                <div class="backup-option">
+                    <div class="backup-icon"><i class="fas fa-trash-alt" style="color:#EF4444;"></i></div>
+                    <div class="backup-info"><h4>Clear All Data</h4><p>⚠️ Permanently delete all your data (cannot be undone)</p></div>
+                    <button class="btn-danger" id="clearAllBtn">Clear All Data</button>
+                </div>
             </div>
         </div>
     </main>
@@ -61,22 +103,34 @@
     let autoBackup = localStorage.getItem('autoBackup') === 'true';
 
     function saveBackupHistory() { localStorage.setItem('backupHistory', JSON.stringify(backupHistory)); }
+    
     function loadHistory() {
         const container = document.getElementById('backupHistory');
+        if (backupHistory.length === 0) {
+            container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-dim);">No backups yet</div>';
+            return;
+        }
         container.innerHTML = backupHistory.map(h => `<div class="backup-file"><span><i class="fas fa-database"></i> ${h.entry}</span><span>${new Date(h.date).toLocaleString()}</span></div>`).join('');
-        if (!backupHistory.length) container.innerHTML = '<div style="text-align:center;padding:20px;">No backups yet</div>';
     }
+    
     function addHistory(entry) { backupHistory.unshift({ date: new Date().toISOString(), entry }); backupHistory = backupHistory.slice(0, 20); saveBackupHistory(); loadHistory(); }
 
     function exportData() {
-        const data = { classes: JSON.parse(localStorage.getItem('classes') || '[]'), students: JSON.parse(localStorage.getItem('students') || '[]'), lessonPlans: JSON.parse(localStorage.getItem('lessonPlans') || '[]'), settings: { theme: localStorage.getItem('theme') }, exportDate: new Date().toISOString() };
+        const data = {
+            exportDate: new Date().toISOString(),
+            version: '2.0',
+            classes: JSON.parse(localStorage.getItem('classes') || '[]'),
+            students: JSON.parse(localStorage.getItem('students') || '[]'),
+            lessonPlans: JSON.parse(localStorage.getItem('lessonPlans') || '[]'),
+            settings: { theme: localStorage.getItem('theme'), autoBackup: autoBackup }
+        };
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
         link.download = `smartclass_backup_${new Date().toISOString().split('T')[0]}.json`;
         link.click();
-        addHistory(`Manual backup created`);
-        alert('Backup exported!');
+        addHistory(`Manual backup created on ${new Date().toLocaleString()}`);
+        alert('Backup exported successfully!');
     }
 
     function importData(file) {
@@ -88,19 +142,48 @@
                 if (data.students) localStorage.setItem('students', JSON.stringify(data.students));
                 if (data.lessonPlans) localStorage.setItem('lessonPlans', JSON.stringify(data.lessonPlans));
                 if (data.settings?.theme) localStorage.setItem('theme', data.settings.theme);
+                if (data.settings?.autoBackup !== undefined) {
+                    autoBackup = data.settings.autoBackup;
+                    localStorage.setItem('autoBackup', autoBackup);
+                    document.getElementById('autoBackupToggle').classList[autoBackup ? 'add' : 'remove']('active');
+                }
                 addHistory(`Restored from backup dated ${data.exportDate || 'unknown'}`);
-                alert('Restore successful! Page will reload.');
+                alert('Backup restored successfully! Page will reload.');
                 location.reload();
             } catch (err) { alert('Invalid backup file'); }
         };
         reader.readAsText(file);
     }
 
-    function clearAllData() { if (confirm('DELETE ALL DATA? Type "DELETE" to confirm') && prompt('Type "DELETE":') === 'DELETE') { localStorage.clear(); alert('All data cleared'); location.reload(); } }
     function clearHistory() { if (confirm('Clear backup history?')) { backupHistory = []; saveBackupHistory(); loadHistory(); } }
-    function toggleAutoBackup() { autoBackup = !autoBackup; localStorage.setItem('autoBackup', autoBackup); document.getElementById('autoBackupToggle').classList.toggle('active'); if (autoBackup) setInterval(() => { if (new Date().getHours() === 20) exportData(); }, 3600000); }
+    
+    function clearAllData() {
+        if (confirm('⚠️ WARNING: This will delete ALL your data! Type "DELETE" to confirm.')) {
+            if (prompt('Type "DELETE" to confirm:') === 'DELETE') {
+                localStorage.clear();
+                alert('All data cleared. Page will reload.');
+                location.reload();
+            }
+        }
+    }
+    
+    function toggleAutoBackup() {
+        autoBackup = !autoBackup;
+        localStorage.setItem('autoBackup', autoBackup);
+        document.getElementById('autoBackupToggle').classList.toggle('active');
+        if (autoBackup) {
+            setInterval(() => { if (new Date().getHours() === 20) exportData(); }, 3600000);
+            addHistory('Auto backup enabled');
+        }
+    }
+
+    function checkAuth() {
+        if (!localStorage.getItem('teacherToken')) window.location.href = 'index.html';
+        else { const n = localStorage.getItem('teacherName'); if(n) document.querySelectorAll('#teacherName').forEach(el => el.textContent = n); }
+    }
 
     document.addEventListener('DOMContentLoaded', () => {
+        checkAuth();
         loadHistory();
         document.getElementById('autoBackupToggle')?.classList[autoBackup ? 'add' : 'remove']('active');
         document.getElementById('exportBtn')?.addEventListener('click', exportData);
