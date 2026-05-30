@@ -9,6 +9,43 @@
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        .analytics-container {
+            padding: 0 32px 24px 32px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border: 1px solid var(--border);
+        }
+        .stat-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+        .stat-icon.blue { background: rgba(59, 130, 246, 0.2); color: #3B82F6; }
+        .stat-icon.green { background: rgba(16, 185, 129, 0.2); color: #10B981; }
+        .stat-icon.orange { background: rgba(255, 102, 0, 0.2); color: #FF6600; }
+        .stat-icon.purple { background: rgba(139, 92, 246, 0.2); color: #8B5CF6; }
+        .stat-info h3 { font-size: 14px; font-weight: 500; color: var(--text-dim); margin-bottom: 8px; }
+        .stat-value { font-size: 32px; font-weight: 700; margin-bottom: 4px; }
+        .stat-change { font-size: 12px; }
+        .stat-change.positive { color: #10B981; }
+        .stat-change.negative { color: #EF4444; }
+        
         .analytics-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -21,150 +58,648 @@
             padding: 20px;
             border: 1px solid var(--border);
         }
-        .chart-card h3 { margin-bottom: 16px; font-size: 16px; color: var(--text-dim); }
-        canvas { max-height: 300px; }
+        .chart-card h3 {
+            margin-bottom: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        canvas { max-height: 300px; width: 100%; }
+        
         .comparison-table {
             background: var(--bg-card);
             border-radius: 16px;
             overflow: hidden;
             border: 1px solid var(--border);
+            margin-top: 24px;
         }
-        .comparison-table table { width: 100%; border-collapse: collapse; }
+        .comparison-table h3 {
+            padding: 16px 20px;
+            margin: 0;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+        }
+        .comparison-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
         .comparison-table th, .comparison-table td {
             padding: 12px 16px;
             text-align: left;
             border-bottom: 1px solid var(--border);
         }
-        .comparison-table th { background: var(--bg-secondary); color: var(--accent-primary); }
+        .comparison-table th {
+            background: var(--bg-secondary);
+            color: var(--accent-primary);
+            font-weight: 600;
+        }
+        .comparison-table tr:hover { background: var(--bg-hover); }
         .trend-up { color: #10B981; }
         .trend-down { color: #EF4444; }
+        
+        .class-selector {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+        .class-btn {
+            padding: 8px 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--text-primary);
+        }
+        .class-btn:hover { border-color: var(--accent-primary); }
+        .class-btn.active {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+            color: white;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .section-header h2 { font-size: 20px; font-weight: 600; }
+        .filter-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .term-select {
+            padding: 8px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+        
+        @media (max-width: 1024px) {
+            .analytics-grid { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .analytics-container { padding: 0 16px 16px 16px; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .section-header { flex-direction: column; gap: 12px; align-items: flex-start; }
+        }
     </style>
 </head>
 <body>
 
 <div class="app-container">
-    <aside class="sidebar" id="sidebar">[... same sidebar ...]</aside>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo"><i class="fas fa-chalkboard-user"></i><span>SMARTCLASS</span></div>
+            <button class="close-sidebar" id="closeSidebar"><i class="fas fa-times"></i></button>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i><span>Dashboard</span></a>
+            <a href="classes.html" class="nav-item"><i class="fas fa-book"></i><span>Classes</span></a>
+            <a href="groups.html" class="nav-item"><i class="fas fa-users"></i><span>Smart Groups</span></a>
+            <a href="analytics.html" class="nav-item active"><i class="fas fa-chart-line"></i><span>Analytics</span></a>
+            <a href="predict.html" class="nav-item"><i class="fas fa-brain"></i><span>Predict</span></a>
+            <a href="lesson-planner.html" class="nav-item"><i class="fas fa-calendar-alt"></i><span>Lesson Planner</span></a>
+            <a href="timetable.html" class="nav-item"><i class="fas fa-clock"></i><span>Timetable</span></a>
+            <a href="reports.html" class="nav-item"><i class="fas fa-file-alt"></i><span>Reports</span></a>
+            <a href="compete.html" class="nav-item"><i class="fas fa-trophy"></i><span>Compete</span></a>
+            <a href="backup.html" class="nav-item"><i class="fas fa-database"></i><span>Backup</span></a>
+            <a href="settings.html" class="nav-item"><i class="fas fa-cog"></i><span>Settings</span></a>
+            <a href="help.html" class="nav-item"><i class="fas fa-question-circle"></i><span>Help</span></a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="teacher-info">
+                <div class="avatar"><i class="fas fa-user"></i></div>
+                <div class="info"><p class="name" id="teacherName">Teacher</p><p class="email" id="teacherEmail">teacher@school.rw</p></div>
+            </div>
+            <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i><span>Logout</span></button>
+        </div>
+    </aside>
 
     <main class="main-content">
-        <header class="top-header">[... same header ...]</header>
+        <header class="top-header">
+            <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+            <div class="header-title"><h1>Performance Analytics</h1><p>Comprehensive class performance analysis</p></div>
+            <div class="header-actions">
+                <button class="notifications-btn" id="notificationsBtn"><i class="fas fa-bell"></i><span class="badge">3</span></button>
+                <div class="theme-toggle"><button id="themeToggle"><i class="fas fa-moon"></i></button></div>
+            </div>
+        </header>
 
-        <div class="section">
+        <div class="analytics-container">
+            <!-- Summary Stats -->
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card">
+                    <div class="stat-icon blue"><i class="fas fa-chalkboard"></i></div>
+                    <div class="stat-info"><h3>Total Classes</h3><p class="stat-value" id="totalClasses">0</p><span class="stat-change">Active classes</span></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green"><i class="fas fa-users"></i></div>
+                    <div class="stat-info"><h3>Total Students</h3><p class="stat-value" id="totalStudents">0</p><span class="stat-change">Enrolled</span></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon orange"><i class="fas fa-chart-line"></i></div>
+                    <div class="stat-info"><h3>Overall Average</h3><p class="stat-value" id="overallAvg">0%</p><span class="stat-change" id="overallTrend">+0%</span></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon purple"><i class="fas fa-trophy"></i></div>
+                    <div class="stat-info"><h3>Passing Rate</h3><p class="stat-value" id="passingRate">0%</p><span class="stat-change" id="passingTrend">+0%</span></div>
+                </div>
+            </div>
+
+            <!-- Filters -->
             <div class="section-header">
-                <h2>Performance Analytics</h2>
-                <div class="section-actions">
-                    <select id="termSelect" class="search-input" style="width: auto;">
+                <h2>Class Analytics</h2>
+                <div class="filter-group">
+                    <select id="termSelect" class="term-select">
                         <option value="1">Term 1</option>
                         <option value="2">Term 2</option>
                         <option value="3" selected>Term 3</option>
                     </select>
-                    <button class="btn-secondary" id="exportAnalyticsBtn"><i class="fas fa-download"></i> Export</button>
+                    <button class="btn-secondary" id="refreshBtn"><i class="fas fa-sync-alt"></i> Refresh</button>
+                    <button class="btn-secondary" id="exportBtn"><i class="fas fa-download"></i> Export Report</button>
                 </div>
             </div>
 
-            <div class="class-selector" id="classSelector" style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px;"></div>
+            <!-- Class Selector -->
+            <div class="class-selector" id="classSelector"></div>
 
-            <div id="analyticsDashboard" style="display: none;">
-                <div class="analytics-grid">
-                    <div class="chart-card"><h3>Class Performance Comparison</h3><canvas id="classComparisonChart"></canvas></div>
-                    <div class="chart-card"><h3>Grade Distribution</h3><canvas id="gradeDistributionChart"></canvas></div>
+            <!-- Charts Grid -->
+            <div class="analytics-grid">
+                <div class="chart-card">
+                    <h3><i class="fas fa-chart-bar"></i> Class Performance Comparison</h3>
+                    <canvas id="classComparisonChart"></canvas>
                 </div>
+                <div class="chart-card">
+                    <h3><i class="fas fa-chart-pie"></i> Grade Distribution</h3>
+                    <canvas id="gradeDistributionChart"></canvas>
+                </div>
+            </div>
 
-                <div class="comparison-table">
-                    <h3 style="padding: 16px; margin: 0;">Class Comparison</h3>
-                    <table id="comparisonTable">
-                        <thead><tr><th>Class</th><th>Average</th><th>Highest</th><th>Lowest</th><th>Passing Rate</th><th>Trend</th></tr></thead>
-                        <tbody id="comparisonBody"></tbody>
-                    </table>
+            <div class="analytics-grid">
+                <div class="chart-card">
+                    <h3><i class="fas fa-chart-line"></i> Performance Trends</h3>
+                    <canvas id="trendChart"></canvas>
                 </div>
+                <div class="chart-card">
+                    <h3><i class="fas fa-medal"></i> Top Performing Students</h3>
+                    <canvas id="topStudentsChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Detailed Comparison Table -->
+            <div class="comparison-table">
+                <h3><i class="fas fa-table-list"></i> Class Performance Comparison</h3>
+                <table id="comparisonTable">
+                    <thead>
+                        <tr><th>Class Name</th><th>Students</th><th>Average Score</th><th>Highest Score</th><th>Lowest Score</th><th>Passing Rate</th><th>Grade A</th><th>Grade B</th><th>Grade C</th><th>Grade D</th><th>Grade F</th><th>Trend</th></tr>
+                    </thead>
+                    <tbody id="comparisonBody"></tbody>
+                </table>
             </div>
         </div>
     </main>
 </div>
 
-<script src="js/auth.js"></script>
-<script src="js/theme.js"></script>
-<script src="js/storage.js"></script>
-<script src="js/app.js"></script>
 <script>
-    let classComparisonChart = null;
-    let gradeDistributionChart = null;
-    let currentClassesData = [];
+    // ==================== DATA MANAGEMENT ====================
+    let allClasses = [];
+    let allStudents = [];
+    let currentTerm = 3;
+    let currentClassFilter = 'all';
 
-    document.addEventListener('DOMContentLoaded', () => {
-        loadClasses();
-        document.getElementById('termSelect')?.addEventListener('change', updateAnalytics);
-        document.getElementById('exportAnalyticsBtn')?.addEventListener('click', exportAnalytics);
-    });
-
-    function loadClasses() {
-        currentClassesData = storage.getClasses();
-        displayClassSelector(currentClassesData);
-        if (currentClassesData.length > 0) {
-            loadAnalytics(currentClassesData);
-            document.getElementById('analyticsDashboard').style.display = 'block';
+    // ==================== LOAD DATA ====================
+    function loadData() {
+        // Load from localStorage
+        allClasses = JSON.parse(localStorage.getItem('classes') || '[]');
+        allStudents = JSON.parse(localStorage.getItem('students') || '[]');
+        
+        // If no data, load demo data
+        if (allClasses.length === 0) {
+            allClasses = [
+                { id: "cls_001", name: "Physics S4A", academicYear: "2026", term: 3 },
+                { id: "cls_002", name: "Physics S3B", academicYear: "2026", term: 3 },
+                { id: "cls_003", name: "Physics S3A", academicYear: "2026", term: 3 },
+                { id: "cls_004", name: "Physics S2A", academicYear: "2026", term: 3 },
+                { id: "cls_005", name: "Physics S2B", academicYear: "2026", term: 3 }
+            ];
+        }
+        
+        if (allStudents.length === 0) {
+            allStudents = [
+                { id: "stu_001", classId: "cls_001", name: "UWAMAHORO Eric", term1: 82, term2: 88, term3: 94 },
+                { id: "stu_002", classId: "cls_001", name: "IRADUKUNDA Diane", term1: 85, term2: 89, term3: 91 },
+                { id: "stu_003", classId: "cls_001", name: "NSENGIYUMVA Jean", term1: 80, term2: 85, term3: 88 },
+                { id: "stu_004", classId: "cls_001", name: "MUKAMANA Grace", term1: 45, term2: 58, term3: 71 },
+                { id: "stu_005", classId: "cls_001", name: "NDAYISABA Pierre", term1: 38, term2: 42, term3: 41 },
+                { id: "stu_006", classId: "cls_002", name: "NSABIMANA Eric", term1: 55, term2: 60, term3: 65 },
+                { id: "stu_007", classId: "cls_002", name: "MUKESHIMANA Marie", term1: 48, term2: 52, term3: 58 },
+                { id: "stu_008", classId: "cls_003", name: "HABIMANA Jean", term1: 75, term2: 78, term3: 82 },
+                { id: "stu_009", classId: "cls_004", name: "UWIMANA Chantal", term1: 82, term2: 84, term3: 86 },
+                { id: "stu_010", classId: "cls_005", name: "HAKIZIMANA Olivier", term1: 86, term2: 82, term3: 84 }
+            ];
         }
     }
 
-    function displayClassSelector(classes) {
+    // ==================== CALCULATE CLASS STATS ====================
+    function getClassStats(classId, term) {
+        const students = allStudents.filter(s => s.classId === classId);
+        const scores = students.map(s => s[`term${term}`] || 0);
+        
+        if (students.length === 0) {
+            return { total: 0, avg: 0, highest: 0, lowest: 0, passing: 0, passingRate: 0, 
+                     gradeA: 0, gradeB: 0, gradeC: 0, gradeD: 0, gradeF: 0, students: [] };
+        }
+        
+        const avg = scores.reduce((a, b) => a + b, 0) / students.length;
+        const highest = Math.max(...scores);
+        const lowest = Math.min(...scores);
+        const passing = scores.filter(s => s >= 50).length;
+        const passingRate = (passing / students.length) * 100;
+        
+        const gradeA = scores.filter(s => s >= 90).length;
+        const gradeB = scores.filter(s => s >= 80 && s < 90).length;
+        const gradeC = scores.filter(s => s >= 70 && s < 80).length;
+        const gradeD = scores.filter(s => s >= 50 && s < 70).length;
+        const gradeF = scores.filter(s => s < 50).length;
+        
+        return {
+            total: students.length,
+            avg: Math.round(avg * 10) / 10,
+            highest,
+            lowest,
+            passing,
+            passingRate: Math.round(passingRate),
+            gradeA, gradeB, gradeC, gradeD, gradeF,
+            students: students.map(s => ({ name: s.name, score: s[`term${term}`] || 0 }))
+        };
+    }
+
+    function getOverallStats(term) {
+        let totalStudents = 0;
+        let totalScores = 0;
+        let totalPassing = 0;
+        
+        for (const cls of allClasses) {
+            const stats = getClassStats(cls.id, term);
+            totalStudents += stats.total;
+            totalScores += stats.avg * stats.total;
+            totalPassing += stats.passing;
+        }
+        
+        const overallAvg = totalStudents > 0 ? Math.round(totalScores / totalStudents) : 0;
+        const overallPassingRate = totalStudents > 0 ? Math.round((totalPassing / totalStudents) * 100) : 0;
+        
+        return { overallAvg, overallPassingRate, totalStudents, totalClasses: allClasses.length };
+    }
+
+    // ==================== UPDATE UI ====================
+    function updateStats() {
+        const { overallAvg, overallPassingRate, totalStudents, totalClasses } = getOverallStats(currentTerm);
+        
+        document.getElementById('totalClasses').textContent = totalClasses;
+        document.getElementById('totalStudents').textContent = totalStudents;
+        document.getElementById('overallAvg').textContent = overallAvg + '%';
+        document.getElementById('passingRate').textContent = overallPassingRate + '%';
+        
+        // Calculate trends (compare with previous term)
+        const prevTerm = currentTerm - 1;
+        if (prevTerm >= 1) {
+            const prevStats = getOverallStats(prevTerm);
+            const avgChange = overallAvg - prevStats.overallAvg;
+            const passingChange = overallPassingRate - prevStats.overallPassingRate;
+            
+            const avgTrendElem = document.getElementById('overallTrend');
+            avgTrendElem.textContent = (avgChange >= 0 ? '+' : '') + avgChange + '%';
+            avgTrendElem.className = 'stat-change ' + (avgChange >= 0 ? 'positive' : 'negative');
+            
+            const passingTrendElem = document.getElementById('passingTrend');
+            passingTrendElem.textContent = (passingChange >= 0 ? '+' : '') + passingChange + '%';
+            passingTrendElem.className = 'stat-change ' + (passingChange >= 0 ? 'positive' : 'negative');
+        }
+    }
+
+    function renderClassSelector() {
         const container = document.getElementById('classSelector');
         container.innerHTML = `
-            <button class="class-card active" data-id="all" style="background: var(--accent-primary); border-radius: 12px; padding: 12px 20px; cursor: pointer;">ALL CLASSES</button>
-            ${classes.map(cls => `
-                <button class="class-card" data-id="${cls.id}" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 12px 20px; cursor: pointer;">${cls.name}</button>
+            <button class="class-btn ${currentClassFilter === 'all' ? 'active' : ''}" data-class="all">ALL CLASSES</button>
+            ${allClasses.map(cls => `
+                <button class="class-btn ${currentClassFilter === cls.id ? 'active' : ''}" data-class="${cls.id}">${cls.name}</button>
             `).join('')}
         `;
         
-        document.querySelectorAll('.class-card').forEach(btn => {
+        document.querySelectorAll('.class-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                document.querySelectorAll('.class-card').forEach(b => b.style.background = 'var(--bg-card)');
-                btn.style.background = 'var(--accent-primary)';
-                const classId = btn.dataset.id === 'all' ? 'all' : btn.dataset.id;
-                loadAnalytics(currentClassesData, classId);
+                currentClassFilter = btn.dataset.class;
+                renderClassSelector();
+                updateAllCharts();
+                renderComparisonTable();
             });
         });
     }
 
-    function loadAnalytics(classes, filterClassId = 'all') {
-        const term = parseInt(document.getElementById('termSelect').value);
-        const classData = filterClassId === 'all' ? classes : classes.filter(c => c.id === filterClassId);
+    function updateAllCharts() {
+        updateClassComparisonChart();
+        updateGradeDistributionChart();
+        updateTrendChart();
+        updateTopStudentsChart();
+    }
+
+    function updateClassComparisonChart() {
+        const ctx = document.getElementById('classComparisonChart').getContext('2d');
+        const filteredClasses = currentClassFilter === 'all' 
+            ? allClasses 
+            : allClasses.filter(c => c.id === currentClassFilter);
         
-        const classNames = classData.map(c => c.name);
-        const averages = classData.map(c => {
-            const students = storage.getStudents(c.id);
-            const avg = students.reduce((a,b) => a + ((b[`term${term}`] || 0)), 0) / (students.length || 1);
-            return avg;
-        });
+        const labels = filteredClasses.map(cls => cls.name);
+        const averages = filteredClasses.map(cls => getClassStats(cls.id, currentTerm).avg);
         
-        if (classComparisonChart) classComparisonChart.destroy();
-        classComparisonChart = new Chart(document.getElementById('classComparisonChart'), {
+        if (window.classComparisonChart) window.classComparisonChart.destroy();
+        
+        window.classComparisonChart = new Chart(ctx, {
             type: 'bar',
-            data: { labels: classNames, datasets: [{ label: `Term ${term} Average (%)`, data: averages, backgroundColor: '#FF6600' }] },
-            options: { responsive: true, maintainAspectRatio: true, scales: { y: { min: 0, max: 100 } } }
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: `Term ${currentTerm} Average (%)`,
+                    data: averages,
+                    backgroundColor: '#FF6600',
+                    borderRadius: 8,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { position: 'top', labels: { color: '#888888' } },
+                    tooltip: { callbacks: { label: (ctx) => `${ctx.raw}%` } }
+                },
+                scales: { y: { min: 0, max: 100, grid: { color: '#333333' }, title: { display: true, text: 'Percentage (%)', color: '#888888' } } }
+            }
         });
+    }
+
+    function updateGradeDistributionChart() {
+        const ctx = document.getElementById('gradeDistributionChart').getContext('2d');
+        const filteredClasses = currentClassFilter === 'all' 
+            ? allClasses 
+            : allClasses.filter(c => c.id === currentClassFilter);
         
-        if (gradeDistributionChart) gradeDistributionChart.destroy();
-        gradeDistributionChart = new Chart(document.getElementById('gradeDistributionChart'), {
+        let totalA = 0, totalB = 0, totalC = 0, totalD = 0, totalF = 0;
+        
+        for (const cls of filteredClasses) {
+            const stats = getClassStats(cls.id, currentTerm);
+            totalA += stats.gradeA;
+            totalB += stats.gradeB;
+            totalC += stats.gradeC;
+            totalD += stats.gradeD;
+            totalF += stats.gradeF;
+        }
+        
+        if (window.gradeDistributionChart) window.gradeDistributionChart.destroy();
+        
+        window.gradeDistributionChart = new Chart(ctx, {
             type: 'doughnut',
-            data: { labels: ['A (90-100%)', 'B (80-89%)', 'C (70-79%)', 'D (50-69%)', 'F (0-49%)'], 
-                    datasets: [{ data: [15, 25, 30, 20, 10], backgroundColor: ['#8B5CF6', '#3B82F6', '#10B981', '#F59E0B', '#EF4444'] }] },
-            options: { responsive: true }
+            data: {
+                labels: ['A (90-100%)', 'B (80-89%)', 'C (70-79%)', 'D (50-69%)', 'F (0-49%)'],
+                datasets: [{
+                    data: [totalA, totalB, totalC, totalD, totalF],
+                    backgroundColor: ['#8B5CF6', '#3B82F6', '#10B981', '#F59E0B', '#EF4444'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { position: 'bottom', labels: { color: '#888888' } },
+                    tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.raw} students (${Math.round(ctx.raw / (totalA+totalB+totalC+totalD+totalF) * 100)}%)` } }
+                }
+            }
         });
+    }
+
+    function updateTrendChart() {
+        const ctx = document.getElementById('trendChart').getContext('2d');
+        const filteredClasses = currentClassFilter === 'all' 
+            ? allClasses 
+            : allClasses.filter(c => c.id === currentClassFilter);
         
-        const comparisonBody = document.getElementById('comparisonBody');
-        comparisonBody.innerHTML = classData.map(c => {
-            const students = storage.getStudents(c.id);
-            const scores = students.map(s => s[`term${term}`] || 0);
-            const avg = scores.reduce((a,b) => a + b, 0) / (scores.length || 1);
-            const highest = Math.max(...scores, 0);
-            const lowest = Math.min(...scores, 100);
-            const passing = scores.filter(s => s >= 50).length;
-            const passingRate = (passing / (scores.length || 1) * 100).toFixed(1);
-            return `<tr><td>${c.name}</td><td><strong>${avg.toFixed(1)}%</strong></td><td>${highest}%</td><td>${lowest}%</td><td>${passingRate}%</td><td class="trend-up">↑ 0%</td></tr>`;
+        const datasets = [];
+        const colors = ['#FF6600', '#3B82F6', '#10B981', '#8B5CF6', '#F59E0B'];
+        
+        for (let i = 0; i < filteredClasses.length && i < 5; i++) {
+            const cls = filteredClasses[i];
+            const term1Avg = getClassStats(cls.id, 1).avg;
+            const term2Avg = getClassStats(cls.id, 2).avg;
+            const term3Avg = getClassStats(cls.id, 3).avg;
+            
+            datasets.push({
+                label: cls.name,
+                data: [term1Avg, term2Avg, term3Avg],
+                borderColor: colors[i % colors.length],
+                backgroundColor: 'transparent',
+                tension: 0.3,
+                fill: false,
+                pointBackgroundColor: colors[i % colors.length],
+                pointBorderColor: '#fff',
+                pointRadius: 5,
+                pointHoverRadius: 7
+            });
+        }
+        
+        if (window.trendChart) window.trendChart.destroy();
+        
+        window.trendChart = new Chart(ctx, {
+            type: 'line',
+            data: { labels: ['Term 1', 'Term 2', 'Term 3'], datasets: datasets },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { position: 'top', labels: { color: '#888888' } },
+                    tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${ctx.raw}%` } }
+                },
+                scales: { y: { min: 0, max: 100, grid: { color: '#333333' }, title: { display: true, text: 'Average Score (%)', color: '#888888' } } }
+            }
+        });
+    }
+
+    function updateTopStudentsChart() {
+        const ctx = document.getElementById('topStudentsChart').getContext('2d');
+        const filteredClasses = currentClassFilter === 'all' 
+            ? allClasses 
+            : allClasses.filter(c => c.id === currentClassFilter);
+        
+        let allTopStudents = [];
+        for (const cls of filteredClasses) {
+            const stats = getClassStats(cls.id, currentTerm);
+            allTopStudents.push(...stats.students);
+        }
+        
+        const topStudents = allTopStudents.sort((a, b) => b.score - a.score).slice(0, 10);
+        
+        if (window.topStudentsChart) window.topStudentsChart.destroy();
+        
+        window.topStudentsChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: topStudents.map(s => s.name.length > 15 ? s.name.substring(0, 12) + '...' : s.name),
+                datasets: [{
+                    label: `Term ${currentTerm} Score (%)`,
+                    data: topStudents.map(s => s.score),
+                    backgroundColor: '#FF6600',
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                indexAxis: 'y',
+                plugins: {
+                    legend: { position: 'top', labels: { color: '#888888' } },
+                    tooltip: { callbacks: { label: (ctx) => `${ctx.raw}%` } }
+                },
+                scales: { x: { min: 0, max: 100, grid: { color: '#333333' }, title: { display: true, text: 'Score (%)', color: '#888888' } } }
+            }
+        });
+    }
+
+    function renderComparisonTable() {
+        const tbody = document.getElementById('comparisonBody');
+        const filteredClasses = currentClassFilter === 'all' 
+            ? allClasses 
+            : allClasses.filter(c => c.id === currentClassFilter);
+        
+        tbody.innerHTML = filteredClasses.map(cls => {
+            const stats = getClassStats(cls.id, currentTerm);
+            const prevTermAvg = getClassStats(cls.id, currentTerm - 1).avg;
+            const trend = stats.avg - prevTermAvg;
+            
+            return `
+                <tr>
+                    <td><strong>${cls.name}</strong></td>
+                    <td>${stats.total}</td>
+                    <td><strong>${stats.avg}%</strong></td>
+                    <td>${stats.highest}%</td>
+                    <td>${stats.lowest}%</td>
+                    <td>${stats.passingRate}%</td>
+                    <td>${stats.gradeA}</td>
+                    <td>${stats.gradeB}</td>
+                    <td>${stats.gradeC}</td>
+                    <td>${stats.gradeD}</td>
+                    <td>${stats.gradeF}</td>
+                    <td class="${trend >= 0 ? 'trend-up' : 'trend-down'}">${trend >= 0 ? '↑' : '↓'} ${Math.abs(trend)}%</td>
+                </tr>
+            `;
         }).join('');
     }
 
-    function updateAnalytics() { loadAnalytics(currentClassesData); }
-    function exportAnalytics() { alert('Export feature will generate PDF/Excel report'); }
+    function exportReport() {
+        let csv = "Class,Students,Average,Highest,Lowest,Passing Rate,A Grade,B Grade,C Grade,D Grade,F Grade,Trend\n";
+        for (const cls of allClasses) {
+            const stats = getClassStats(cls.id, currentTerm);
+            const prevTermAvg = getClassStats(cls.id, currentTerm - 1).avg;
+            const trend = stats.avg - prevTermAvg;
+            csv += `"${cls.name}",${stats.total},${stats.avg}%,${stats.highest}%,${stats.lowest}%,${stats.passingRate}%,${stats.gradeA},${stats.gradeB},${stats.gradeC},${stats.gradeD},${stats.gradeF},${trend >= 0 ? '+' : ''}${trend}%\n`;
+        }
+        
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `analytics_report_term${currentTerm}_${new Date().toISOString().split('T')[0]}.csv`;
+        link.click();
+        showToast('Report exported successfully!', 'success');
+    }
+
+    function showToast(message, type) {
+        const toast = document.createElement('div');
+        toast.style.cssText = `position: fixed; bottom: 20px; right: 20px; background: ${type === 'success' ? '#10B981' : '#FF6600'}; color: white; padding: 12px 20px; border-radius: 8px; z-index: 1000; animation: fadeIn 0.3s ease;`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    function refreshAll() {
+        loadData();
+        updateStats();
+        renderClassSelector();
+        updateAllCharts();
+        renderComparisonTable();
+    }
+
+    // ==================== AUTHENTICATION ====================
+    function checkAuth() {
+        const token = localStorage.getItem('teacherToken');
+        if (!token && !window.location.pathname.includes('index.html')) {
+            window.location.href = 'index.html';
+            return false;
+        }
+        const teacherName = localStorage.getItem('teacherName');
+        if (teacherName) {
+            document.querySelectorAll('#teacherName').forEach(el => { if (el) el.textContent = teacherName; });
+        }
+        return true;
+    }
+
+    function logout() {
+        localStorage.removeItem('teacherToken');
+        localStorage.removeItem('teacherName');
+        localStorage.removeItem('teacherEmail');
+        window.location.href = 'index.html';
+    }
+
+    // ==================== INITIALIZATION ====================
+    document.addEventListener('DOMContentLoaded', () => {
+        if (!checkAuth()) return;
+        
+        loadData();
+        refreshAll();
+        
+        document.getElementById('termSelect')?.addEventListener('change', (e) => {
+            currentTerm = parseInt(e.target.value);
+            refreshAll();
+        });
+        document.getElementById('refreshBtn')?.addEventListener('click', refreshAll);
+        document.getElementById('exportBtn')?.addEventListener('click', exportReport);
+        document.getElementById('logoutBtn')?.addEventListener('click', logout);
+        
+        // Sidebar toggle
+        const menuToggle = document.getElementById('menuToggle');
+        const closeSidebar = document.getElementById('closeSidebar');
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.querySelector('.main-content');
+        
+        menuToggle?.addEventListener('click', () => sidebar.classList.toggle('open'));
+        closeSidebar?.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            if (window.innerWidth > 768) {
+                sidebar.classList.add('collapsed');
+                mainContent.classList.add('expanded');
+            }
+        });
+        
+        // Theme toggle
+        let isDark = true;
+        document.getElementById('themeToggle')?.addEventListener('click', () => {
+            isDark = !isDark;
+            document.body.style.background = isDark ? '#000000' : '#F5F5F5';
+            document.body.style.color = isDark ? '#FFFFFF' : '#111111';
+            document.querySelector('.main-content').style.background = isDark ? '#000000' : '#F5F5F5';
+        });
+        
+        // Notifications
+        document.getElementById('notificationsBtn')?.addEventListener('click', () => {
+            alert('📋 Notifications:\n\n• Analytics report ready to export\n• Class performance data updated');
+        });
+    });
 </script>
 </body>
 </html>
