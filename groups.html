@@ -6,8 +6,291 @@
     <title>Smart Groups - SmartClass Analytics</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #000000;
+            color: #FFFFFF;
+            overflow-x: hidden;
+            transition: all 0.3s ease;
+        }
+
+        /* Light theme body class */
+        body.light-theme {
+            background: #F5F5F5;
+            color: #111111;
+        }
+
+        body.light-theme .sidebar { background: #FFFFFF; border-right-color: #DDDDDD; }
+        body.light-theme .sidebar-header { border-bottom-color: #DDDDDD; }
+        body.light-theme .nav-item { color: #333333; }
+        body.light-theme .nav-item:hover { background: rgba(255, 102, 0, 0.1); }
+        body.light-theme .nav-item.active { background: rgba(255, 102, 0, 0.15); }
+        body.light-theme .sidebar-footer { border-top-color: #DDDDDD; }
+        body.light-theme .top-header { background: #FFFFFF; border-bottom-color: #DDDDDD; }
+        body.light-theme .top-header h1, body.light-theme .top-header p { color: #111111; }
+        body.light-theme .stat-card, body.light-theme .config-group, body.light-theme .group-card { background: #FFFFFF; border-color: #DDDDDD; }
+        body.light-theme .stat-card h3, body.light-theme .stat-card .stat-value { color: #111111; }
+        body.light-theme .btn-secondary { background: #EEEEEE; border-color: #CCCCCC; color: #111111; }
+        body.light-theme .search-input { background: #F5F5F5; border-color: #CCCCCC; color: #111111; }
+        body.light-theme .strategy-btn { background: #EEEEEE; border-color: #CCCCCC; color: #333333; }
+        body.light-theme .strategy-btn.active { background: #FF6600; color: white; }
+        body.light-theme .member-item { border-bottom-color: #EEEEEE; }
+        body.light-theme .group-leader { background: rgba(255, 102, 0, 0.1); }
+
+        /* ==================== SIDEBAR ==================== */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 100;
+            transition: transform 0.3s ease;
+            border-right: 1px solid #222222;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-280px);
+        }
+
+        .sidebar-header {
+            padding: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #222222;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 18px;
+            font-weight: 700;
+            color: #FF6600;
+        }
+
+        .close-sidebar {
+            background: none;
+            border: none;
+            color: #666666;
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 24px 16px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            margin-bottom: 4px;
+            color: #CCCCCC;
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+
+        .nav-item i { width: 24px; }
+        .nav-item:hover { background: rgba(255, 102, 0, 0.1); color: #FF6600; }
+        .nav-item.active { background: rgba(255, 102, 0, 0.15); color: #FF6600; border-left: 3px solid #FF6600; }
+
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid #222222;
+        }
+
+        .teacher-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 102, 0, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #FF6600;
+        }
+
+        .info .name { font-weight: 600; font-size: 14px; }
+        .info .email { font-size: 12px; color: #666666; }
+
+        .logout-btn {
+            width: 100%;
+            padding: 10px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #EF4444;
+            border-radius: 8px;
+            color: #EF4444;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+        .logout-btn:hover { background: #EF4444; color: white; }
+
+        /* ==================== MAIN CONTENT ==================== */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            transition: margin-left 0.3s ease;
+            min-height: 100vh;
+        }
+        .main-content.expanded { margin-left: 0; }
+
+        .top-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 32px;
+            background: #0a0a0a;
+            border-bottom: 1px solid #222222;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            display: none;
+        }
+
+        .header-title h1 { font-size: 24px; font-weight: 600; margin-bottom: 4px; }
+        .header-title p { color: #888888; font-size: 14px; }
+
+        .header-actions { display: flex; align-items: center; gap: 16px; }
+        .notifications-btn { background: none; border: none; color: white; font-size: 20px; cursor: pointer; position: relative; }
+        .notifications-btn .badge { position: absolute; top: 0; right: 0; background: #EF4444; font-size: 10px; padding: 2px 6px; border-radius: 10px; }
+        .theme-toggle button { background: none; border: none; color: white; font-size: 20px; cursor: pointer; }
+
+        /* Feature Disabled Banner */
+        .feature-disabled {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #EF4444;
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            margin: 40px;
+        }
+        .feature-disabled i { font-size: 48px; color: #EF4444; margin-bottom: 16px; }
+        .feature-disabled h3 { margin-bottom: 8px; }
+        .feature-disabled p { color: #888888; margin-bottom: 20px; }
+        .feature-disabled .btn-primary { background: #EF4444; }
+
+        /* Section */
+        .section { padding: 0 32px 24px 32px; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .section-header h2 { font-size: 18px; font-weight: 600; }
+
+        .search-input {
+            padding: 8px 16px;
+            background: #1a1a1a;
+            border: 1px solid #333333;
+            border-radius: 8px;
+            color: white;
+            width: 220px;
+        }
+        .search-input:focus { outline: none; border-color: #FF6600; }
+
+        .btn-secondary {
+            padding: 8px 16px;
+            background: #1a1a1a;
+            border: 1px solid #333333;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-secondary:hover { background: #FF6600; border-color: #FF6600; }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #FF6600, #FFA500);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255, 102, 0, 0.3); }
+
+        /* Class Selector */
+        .class-selector { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+        .class-card {
+            background: #111111;
+            border: 1px solid #333333;
+            border-radius: 12px;
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .class-card:hover { border-color: #FF6600; transform: translateY(-2px); }
+        .class-card.selected { border-color: #FF6600; background: rgba(255, 102, 0, 0.1); }
+
+        /* Config Group */
+        .config-group {
+            background: #111111;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #333333;
+        }
+        .config-row { display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-end; }
+        .config-item { flex: 1; }
+        .config-item label { display: block; margin-bottom: 8px; color: #888888; font-size: 14px; }
+        .config-item input {
+            width: 100%;
+            padding: 10px;
+            background: #1a1a1a;
+            border: 1px solid #333333;
+            border-radius: 8px;
+            color: white;
+        }
+        .strategy-buttons { display: flex; gap: 12px; margin-top: 16px; }
+        .strategy-btn {
+            flex: 1;
+            padding: 10px;
+            background: #1a1a1a;
+            border: 1px solid #333333;
+            border-radius: 8px;
+            cursor: pointer;
+            color: #CCCCCC;
+        }
+        .strategy-btn.active { background: #FF6600; border-color: #FF6600; color: white; }
+
+        /* Groups Container */
         .groups-container {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -15,10 +298,10 @@
             margin-top: 20px;
         }
         .group-card {
-            background: var(--bg-card);
+            background: #111111;
             border-radius: 16px;
             padding: 20px;
-            border: 1px solid var(--border);
+            border: 1px solid #333333;
         }
         .group-header {
             display: flex;
@@ -26,155 +309,234 @@
             align-items: center;
             margin-bottom: 16px;
             padding-bottom: 12px;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid #333333;
         }
-        .group-number { font-size: 18px; font-weight: 700; color: var(--accent-primary); }
-        .group-avg { background: var(--bg-hover); padding: 4px 12px; border-radius: 20px; font-size: 14px; }
-        .group-leader { background: rgba(255,102,0,0.1); padding: 8px 12px; border-radius: 8px; margin-bottom: 12px; }
+        .group-number { font-size: 18px; font-weight: 700; color: #FF6600; }
+        .group-avg { background: #1a1a1a; padding: 4px 12px; border-radius: 20px; font-size: 14px; }
+        .group-leader { background: rgba(255, 102, 0, 0.1); padding: 8px 12px; border-radius: 8px; margin-bottom: 12px; font-size: 14px; }
         .member-item {
             display: flex;
             justify-content: space-between;
             padding: 8px 0;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid #333333;
             font-size: 14px;
         }
         .member-name { display: flex; align-items: center; gap: 8px; }
         .score-high { color: #10B981; font-weight: 600; }
         .score-low { color: #EF4444; font-weight: 600; }
-        .config-group {
-            background: var(--bg-card);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid var(--border);
+        .score-med { color: #FFA500; font-weight: 600; }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-280px); }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .menu-toggle { display: block; }
+            .section { padding: 0 16px 16px 16px; }
+            .groups-container { grid-template-columns: 1fr; }
+            .config-row { flex-direction: column; }
         }
-        .config-row { display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-end; }
-        .config-group-item { flex: 1; }
-        .config-group-item label { display: block; margin-bottom: 8px; color: var(--text-dim); font-size: 14px; }
-        .config-group-item input { width: 100%; padding: 10px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); }
-        .strategy-buttons { display: flex; gap: 12px; margin-top: 16px; }
-        .strategy-btn {
-            flex: 1;
-            padding: 10px;
-            background: var(--bg-hover);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        .strategy-btn.active { background: var(--accent-primary); border-color: var(--accent-primary); color: white; }
     </style>
 </head>
 <body>
 
 <div class="app-container">
-    <aside class="sidebar" id="sidebar">[... same sidebar as classes ...]</aside>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo"><i class="fas fa-chalkboard-user"></i><span>SMARTCLASS</span></div>
+            <button class="close-sidebar" id="closeSidebar"><i class="fas fa-times"></i></button>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i><span>Dashboard</span></a>
+            <a href="classes.html" class="nav-item"><i class="fas fa-book"></i><span>Classes</span></a>
+            <a href="groups.html" class="nav-item active"><i class="fas fa-users"></i><span>Smart Groups</span></a>
+            <a href="analytics.html" class="nav-item"><i class="fas fa-chart-line"></i><span>Analytics</span></a>
+            <a href="predict.html" class="nav-item"><i class="fas fa-brain"></i><span>Predict</span></a>
+            <a href="lesson-planner.html" class="nav-item"><i class="fas fa-calendar-alt"></i><span>Lesson Planner</span></a>
+            <a href="timetable.html" class="nav-item"><i class="fas fa-clock"></i><span>Timetable</span></a>
+            <a href="reports.html" class="nav-item"><i class="fas fa-file-alt"></i><span>Reports</span></a>
+            <a href="compete.html" class="nav-item"><i class="fas fa-trophy"></i><span>Compete</span></a>
+            <a href="backup.html" class="nav-item"><i class="fas fa-database"></i><span>Backup</span></a>
+            <a href="settings.html" class="nav-item"><i class="fas fa-cog"></i><span>Settings</span></a>
+            <a href="help.html" class="nav-item"><i class="fas fa-question-circle"></i><span>Help</span></a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="teacher-info">
+                <div class="avatar"><i class="fas fa-user"></i></div>
+                <div class="info"><p class="name" id="teacherName">Teacher</p><p class="email" id="teacherEmail">teacher@school.rw</p></div>
+            </div>
+            <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i><span>Logout</span></button>
+        </div>
+    </aside>
 
     <main class="main-content">
-        <header class="top-header">[... same header ...]</header>
+        <header class="top-header">
+            <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+            <div class="header-title"><h1>Smart Groups</h1><p>Create balanced study groups automatically</p></div>
+            <div class="header-actions">
+                <button class="notifications-btn" id="notificationsBtn"><i class="fas fa-bell"></i><span class="badge">3</span></button>
+                <div class="theme-toggle"><button id="themeToggle"><i class="fas fa-moon"></i></button></div>
+            </div>
+        </header>
 
-        <div class="section">
-            <div class="section-header">
-                <h2><i class="fas fa-users"></i> Smart Groups</h2>
-                <button class="btn-secondary" id="refreshGroupsBtn"><i class="fas fa-sync-alt"></i> Refresh</button>
+        <!-- Feature Disabled Message (shown if feature is off in settings) -->
+        <div id="featureDisabledMessage" class="feature-disabled" style="display: none;">
+            <i class="fas fa-toggle-off"></i>
+            <h3>Smart Groups Feature is Disabled</h3>
+            <p>This feature is currently turned off. You can enable it in Settings.</p>
+            <button class="btn-primary" onclick="window.location.href='settings.html'">Go to Settings</button>
+        </div>
+
+        <!-- Main Content (shown if feature is enabled) -->
+        <div id="featureEnabledContent" style="display: none;">
+            <div class="section">
+                <div class="section-header">
+                    <h2><i class="fas fa-users"></i> My Classes</h2>
+                    <button class="btn-secondary" id="refreshGroupsBtn"><i class="fas fa-sync-alt"></i> Refresh</button>
+                </div>
+                <div class="class-selector" id="classSelector"></div>
             </div>
 
-            <div class="class-selector" id="classSelector" style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px;"></div>
-
             <div id="groupConfig" style="display: none;">
-                <div class="config-group">
-                    <h3 style="margin-bottom: 16px;">Group Configuration</h3>
-                    <div class="config-row">
-                        <div class="config-group-item">
-                            <label>Number of Groups</label>
-                            <input type="number" id="numGroups" min="2" max="10" value="6">
+                <div class="section">
+                    <div class="config-group">
+                        <h3 style="margin-bottom: 16px;">Group Configuration</h3>
+                        <div class="config-row">
+                            <div class="config-item">
+                                <label>Number of Groups</label>
+                                <input type="number" id="numGroups" min="2" max="10" value="4">
+                            </div>
+                            <div class="config-item">
+                                <label>Students per group</label>
+                                <input type="text" id="studentsPerGroup" readonly disabled placeholder="Auto-calculated">
+                            </div>
+                            <div class="config-item">
+                                <button class="btn-primary" id="generateGroupsBtn" style="width: 100%;">🎲 Generate Groups</button>
+                            </div>
                         </div>
-                        <div class="config-group-item">
-                            <label>Students per group</label>
-                            <input type="text" id="studentsPerGroup" readonly disabled>
-                        </div>
-                        <div class="config-group-item">
-                            <button class="btn-primary" id="generateGroupsBtn" style="width: 100%;">🎲 Generate Groups</button>
+                        <div class="strategy-buttons">
+                            <button class="strategy-btn active" data-strategy="balanced">⚖️ Balanced by Performance</button>
+                            <button class="strategy-btn" data-strategy="random">🎲 Random Grouping</button>
+                            <button class="strategy-btn" data-strategy="same">🏆 Best Together</button>
                         </div>
                     </div>
-                    <div class="strategy-buttons">
-                        <button class="strategy-btn active" data-strategy="balanced">⚖️ Balanced by Performance</button>
-                        <button class="strategy-btn" data-strategy="random">🎲 Random Grouping</button>
-                        <button class="strategy-btn" data-strategy="same">🏆 Best Together</button>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">
+                        <h2>Generated Groups</h2>
+                        <button class="btn-secondary" id="exportGroupsBtn"><i class="fas fa-download"></i> Export Groups</button>
+                    </div>
+                    <div id="groupsContainer" class="groups-container">
+                        <div style="text-align: center; padding: 40px;">Select a class and generate groups</div>
                     </div>
                 </div>
             </div>
-
-            <div id="groupsContainer" class="groups-container"></div>
         </div>
     </main>
 </div>
 
-<script src="js/auth.js"></script>
-<script src="js/theme.js"></script>
-<script src="js/storage.js"></script>
-<script src="js/app.js"></script>
 <script>
+    // ==================== DATA STORAGE ====================
+    function getClasses() {
+        return JSON.parse(localStorage.getItem('classes') || '[]');
+    }
+
+    function getStudents() {
+        return JSON.parse(localStorage.getItem('students') || '[]');
+    }
+
+    function getStudentsByClass(classId) {
+        return getStudents().filter(s => s.classId === classId);
+    }
+
+    // ==================== FEATURE TOGGLE CHECK ====================
+    function isSmartGroupsEnabled() {
+        const enabled = localStorage.getItem('feature_smartGroups');
+        return enabled !== 'false'; // Default to true if not set
+    }
+
+    // ==================== THEME MANAGEMENT ====================
+    function applyTheme() {
+        const isDark = localStorage.getItem('theme') !== 'light';
+        if (isDark) {
+            document.body.classList.remove('light-theme');
+            document.body.style.background = '#000000';
+        } else {
+            document.body.classList.add('light-theme');
+            document.body.style.background = '#F5F5F5';
+        }
+    }
+
+    function toggleTheme() {
+        const isDark = document.body.classList.contains('light-theme');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        applyTheme();
+    }
+
+    // ==================== SMART GROUPS LOGIC ====================
     let currentClassId = null;
     let currentStrategy = 'balanced';
     let currentStudents = [];
 
-    document.addEventListener('DOMContentLoaded', () => {
-        loadClasses();
-        setupEventListeners();
-    });
-
-    function setupEventListeners() {
-        document.getElementById('generateGroupsBtn')?.addEventListener('click', generateGroups);
-        document.getElementById('refreshGroupsBtn')?.addEventListener('click', () => generateGroups());
-        
-        document.querySelectorAll('.strategy-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.strategy-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                currentStrategy = btn.dataset.strategy;
-            });
-        });
-        
-        document.getElementById('numGroups')?.addEventListener('input', updateStudentsPerGroup);
-    }
-
     function loadClasses() {
-        const classes = storage.getClasses();
+        const classes = getClasses();
         const container = document.getElementById('classSelector');
+        
+        if (classes.length === 0) {
+            container.innerHTML = '<div style="color: #888888; padding: 20px;">No classes found. Create a class first.</div>';
+            return;
+        }
+        
         container.innerHTML = classes.map(cls => `
-            <button class="class-card" data-id="${cls.id}" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 12px 20px; cursor: pointer;">
-                ${cls.name} <small style="color: var(--text-dim);">(${cls.studentCount || 0} students)</small>
-            </button>
+            <div class="class-card" data-id="${cls.id}">
+                <strong>${cls.name}</strong>
+                <small style="display: block; color: #888888; font-size: 12px;">${cls.studentCount || 0} students</small>
+            </div>
         `).join('');
         
-        document.querySelectorAll('.class-card').forEach(btn => {
-            btn.addEventListener('click', () => selectClass(btn.dataset.id));
+        document.querySelectorAll('.class-card').forEach(card => {
+            card.addEventListener('click', () => {
+                document.querySelectorAll('.class-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                selectClass(card.dataset.id);
+            });
         });
     }
 
     function selectClass(classId) {
         currentClassId = classId;
-        document.getElementById('groupConfig').style.display = 'block';
-        currentStudents = storage.getStudents(classId);
-        updateStudentsPerGroup();
-    }
-
-    function updateStudentsPerGroup() {
-        const numGroups = parseInt(document.getElementById('numGroups').value) || 6;
-        const studentsPerGroup = Math.ceil(currentStudents.length / numGroups);
-        document.getElementById('studentsPerGroup').value = studentsPerGroup;
-    }
-
-    function generateGroups() {
-        const numGroups = parseInt(document.getElementById('numGroups').value);
-        const students = [...currentStudents];
+        currentStudents = getStudentsByClass(classId);
         
-        // Calculate averages
-        students.forEach(s => {
+        // Calculate averages for each student
+        currentStudents.forEach(s => {
             s.average = ((s.term1 || 0) + (s.term2 || 0) + (s.term3 || 0)) / 3;
         });
         
-        // Sort by performance
+        document.getElementById('groupConfig').style.display = 'block';
+        updateStudentsPerGroup();
+        
+        // Auto-generate groups when class is selected
+        generateGroups();
+    }
+
+    function updateStudentsPerGroup() {
+        const numGroups = parseInt(document.getElementById('numGroups').value) || 4;
+        const perGroup = Math.ceil(currentStudents.length / numGroups);
+        document.getElementById('studentsPerGroup').value = perGroup > 0 ? perGroup : 0;
+    }
+
+    function generateGroups() {
+        const numGroups = parseInt(document.getElementById('numGroups').value) || 4;
+        
+        if (currentStudents.length === 0) {
+            document.getElementById('groupsContainer').innerHTML = '<div style="text-align: center; padding: 40px;">No students in this class. Add students first.</div>';
+            return;
+        }
+        
+        let students = [...currentStudents];
+        
+        // Apply strategy
         if (currentStrategy === 'balanced') {
             students.sort((a, b) => b.average - a.average);
         } else if (currentStrategy === 'random') {
@@ -182,6 +544,8 @@
                 const j = Math.floor(Math.random() * (i + 1));
                 [students[i], students[j]] = [students[j], students[i]];
             }
+        } else if (currentStrategy === 'same') {
+            students.sort((a, b) => b.average - a.average);
         }
         
         // Create groups
@@ -191,10 +555,12 @@
             groups[i % numGroups].push(students[i]);
         }
         
-        // Mark leaders (top performer in each group)
+        // Mark leaders (highest average in each group)
         groups.forEach(group => {
-            group.sort((a, b) => b.average - a.average);
-            if (group.length > 0) group[0].isLeader = true;
+            if (group.length > 0) {
+                group.sort((a, b) => b.average - a.average);
+                group[0].isLeader = true;
+            }
         });
         
         displayGroups(groups);
@@ -202,9 +568,16 @@
 
     function displayGroups(groups) {
         const container = document.getElementById('groupsContainer');
+        
+        if (groups.length === 0 || groups.every(g => g.length === 0)) {
+            container.innerHTML = '<div style="text-align: center; padding: 40px;">No groups generated. Add students to this class.</div>';
+            return;
+        }
+        
         container.innerHTML = groups.map((group, idx) => {
-            const avg = group.reduce((sum, s) => sum + s.average, 0) / group.length;
+            const avg = group.length > 0 ? group.reduce((sum, s) => sum + s.average, 0) / group.length : 0;
             const leader = group.find(s => s.isLeader) || group[0];
+            
             return `
                 <div class="group-card">
                     <div class="group-header">
@@ -221,14 +594,132 @@
                                     <i class="fas fa-user-graduate"></i>
                                     <span>${m.name}</span>
                                 </div>
-                                <div class="${m.average >= 80 ? 'score-high' : (m.average < 50 ? 'score-low' : '')}">${m.average.toFixed(0)}%</div>
+                                <div class="${m.average >= 80 ? 'score-high' : (m.average < 50 ? 'score-low' : 'score-med')}">${m.average.toFixed(1)}%</div>
                             </div>
                         `).join('')}
+                        ${group.length === 0 ? '<div style="padding: 8px; color: #888888;">No students assigned</div>' : ''}
                     </div>
                 </div>
             `;
         }).join('');
     }
+
+    function exportGroups() {
+        const groupsDiv = document.getElementById('groupsContainer');
+        const groupsText = groupsDiv.innerText;
+        const blob = new Blob([groupsText], { type: 'text/plain' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `groups_${currentClassId}_${Date.now()}.txt`;
+        link.click();
+        showToast('Groups exported successfully!', 'success');
+    }
+
+    function showToast(message, type) {
+        const toast = document.createElement('div');
+        toast.style.cssText = `position: fixed; bottom: 20px; right: 20px; background: ${type === 'success' ? '#10B981' : '#FF6600'}; color: white; padding: 12px 20px; border-radius: 8px; z-index: 1000; animation: fadeIn 0.3s ease;`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    // ==================== AUTHENTICATION ====================
+    function checkAuth() {
+        const token = localStorage.getItem('teacherToken');
+        if (!token && !window.location.pathname.includes('index.html')) {
+            window.location.href = 'index.html';
+            return false;
+        }
+        
+        const teacherName = localStorage.getItem('teacherName');
+        const teacherEmail = localStorage.getItem('teacherEmail');
+        
+        if (teacherName) {
+            document.querySelectorAll('#teacherName').forEach(el => { if (el) el.textContent = teacherName; });
+        }
+        if (teacherEmail) {
+            document.getElementById('teacherEmail').textContent = teacherEmail;
+        }
+        return true;
+    }
+
+    function logout() {
+        localStorage.removeItem('teacherToken');
+        localStorage.removeItem('teacherName');
+        localStorage.removeItem('teacherEmail');
+        window.location.href = 'index.html';
+    }
+
+    // ==================== INITIALIZATION ====================
+    document.addEventListener('DOMContentLoaded', () => {
+        if (!checkAuth()) return;
+        
+        applyTheme();
+        
+        // Check if Smart Groups feature is enabled
+        const featureEnabled = isSmartGroupsEnabled();
+        
+        if (!featureEnabled) {
+            document.getElementById('featureDisabledMessage').style.display = 'block';
+            document.getElementById('featureEnabledContent').style.display = 'none';
+        } else {
+            document.getElementById('featureDisabledMessage').style.display = 'none';
+            document.getElementById('featureEnabledContent').style.display = 'block';
+            loadClasses();
+        }
+        
+        // Setup event listeners
+        document.getElementById('logoutBtn')?.addEventListener('click', logout);
+        document.getElementById('themeToggle')?.addEventListener('click', toggleTheme);
+        document.getElementById('refreshGroupsBtn')?.addEventListener('click', () => {
+            if (currentClassId) {
+                currentStudents = getStudentsByClass(currentClassId);
+                currentStudents.forEach(s => {
+                    s.average = ((s.term1 || 0) + (s.term2 || 0) + (s.term3 || 0)) / 3;
+                });
+                updateStudentsPerGroup();
+                generateGroups();
+                showToast('Groups refreshed!', 'success');
+            } else {
+                loadClasses();
+            }
+        });
+        document.getElementById('generateGroupsBtn')?.addEventListener('click', generateGroups);
+        document.getElementById('exportGroupsBtn')?.addEventListener('click', exportGroups);
+        document.getElementById('numGroups')?.addEventListener('input', () => {
+            updateStudentsPerGroup();
+            generateGroups();
+        });
+        
+        document.querySelectorAll('.strategy-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.strategy-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentStrategy = btn.dataset.strategy;
+                generateGroups();
+            });
+        });
+        
+        // Sidebar toggle
+        const menuToggle = document.getElementById('menuToggle');
+        const closeSidebar = document.getElementById('closeSidebar');
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.querySelector('.main-content');
+        
+        menuToggle?.addEventListener('click', () => sidebar.classList.toggle('open'));
+        closeSidebar?.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            if (window.innerWidth > 768) {
+                sidebar.classList.add('collapsed');
+                mainContent.classList.add('expanded');
+            }
+        });
+        
+        // Notifications
+        document.getElementById('notificationsBtn')?.addEventListener('click', () => {
+            alert('📋 Notifications:\n\n• Today: Physics S4A at 08:00\n• 8 students failing in Physics S3B');
+        });
+    });
 </script>
 </body>
 </html>
