@@ -1,17 +1,45 @@
+# Node modules (DO NOT UPLOAD!)
 node_modules/
-.wrangler/
-*.log
-.DS_Store
-*.db
-*.sqlite
-.vscode/
-.idea/
-*.pyc
+npm-debug.log
+yarn-error.log
+package-lock.json
+bun.lock
+bun.lockb
+
+# Python
 __pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
 venv/
 env/
 .venv/
-dist/
-build/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
 *.tmp
 *.temp
+
+# Cloudflare
+.wrangler/
