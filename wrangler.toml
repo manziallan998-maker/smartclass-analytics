@@ -1,41 +1,82 @@
-# ==================== WRANGLER CONFIGURATION ====================
-# Cloudflare Pages + Functions Configuration
-# For SmartClass Analytics v2.0
+# ============================================================================
+#  WRANGLER CONFIGURATION - SMARTCLASS ANALYTICS v2.0
+#  Professional Cloudflare Pages + Workers Configuration
+# ============================================================================
 
 name = "smartclass-analytics"
 main = "functions/api.js"
 compatibility_date = "2026-05-30"
 
-# Pages Configuration
-[pages]
-  build_command = ""
-  output_dir = "."
-  
-# Environment Variables
-[vars]
-  ENVIRONMENT = "production"
-  APP_NAME = "SmartClass Analytics"
-  APP_VERSION = "2.0.0"
-  API_VERSION = "v1"
+# ============================================================================
+#  NODE.JS COMPATIBILITY FLAGS
+# ============================================================================
+compatibility_flags = [
+    "nodejs_compat",
+    "streams_enable_constructors",
+    "fetch_refuse_unknown_protocols"
+]
 
-# Node.js Compatibility
-compatibility_flags = ["nodejs_compat"]
-
-# Assets Configuration
+# ============================================================================
+#  ASSETS CONFIGURATION - Static files serving
+# ============================================================================
 [assets]
-  directory = "."
-  binding = "ASSETS"
+directory = "."
+binding = "ASSETS"
+not_found_handling = "404.html"
 
-# Observability (Logging & Monitoring)
+# ============================================================================
+#  OBSERVABILITY - Monitoring & Logging
+# ============================================================================
 [observability]
-  enabled = true
-  head_sampling_rate = 1.0
+enabled = true
+head_sampling_rate = 1.0
+tail_sampling_rate = 0.1
 
-# Build Configuration
-[build]
-  command = ""
-  cwd = "."
+# ============================================================================
+#  ENVIRONMENT VARIABLES
+# ============================================================================
+[vars]
+ENVIRONMENT = "production"
+APP_NAME = "SmartClass Analytics"
+APP_VERSION = "2.0.0"
+API_VERSION = "v1"
+JWT_SECRET = "smartclass-super-secret-key-2026-change-in-production"
+SESSION_TIMEOUT = "3600"
+MAX_LOGIN_ATTEMPTS = "5"
+RATE_LIMIT_REQUESTS = "100"
+RATE_LIMIT_WINDOW = "60"
 
-# Deployment Configuration
-[deploy]
-  strategy = "static"
+# ============================================================================
+#  D1 DATABASE CONFIGURATION (For future production use)
+# ============================================================================
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "smartclass-db"
+# database_id = "your-database-id-here"
+
+# ============================================================================
+#  R2 BUCKET CONFIGURATION (For file storage)
+# ============================================================================
+# [[r2_buckets]]
+# binding = "STORAGE"
+# bucket_name = "smartclass-storage"
+
+# ============================================================================
+#  QUEUE CONFIGURATION (For background jobs)
+# ============================================================================
+# [[queues]]
+# binding = "TASKS"
+# queue_name = "smartclass-tasks"
+
+# ============================================================================
+#  SERVICE BINDINGS
+# ============================================================================
+# [services]
+# AI = "ai-worker"
+
+# ============================================================================
+#  CUSTOM DOMAINS
+# ============================================================================
+# [[routes]]
+# pattern = "smartclass-analytics.com/*"
+# zone_name = "smartclass-analytics.com"
