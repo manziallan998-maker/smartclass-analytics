@@ -1,4 +1,4 @@
-# Node modules - CRITICAL: DO NOT UPLOAD
+# Node modules - CRITICAL
 node_modules/
 npm-debug.log
 yarn-error.log
@@ -7,52 +7,21 @@ bun.lock
 bun.lockb
 
 # Build outputs
+.wrangler/
 dist/
 build/
-.wrangler/
-.vite/
 
 # Python
 __pycache__/
 *.pyc
-*.pyo
-*.pyd
-.Python
-*.so
-*.egg
-*.egg-info/
 venv/
 env/
-.venv/
-
-# Database
-*.db
-*.sqlite
-*.sqlite3
-*.db-journal
 
 # IDE
 .vscode/
 .idea/
-*.swp
-*.swo
-*~
 .DS_Store
 Thumbs.db
-desktop.ini
 
 # Logs
 *.log
-logs/
-*.tmp
-*.temp
-*.cache
-
-# Environment
-.env
-.env.local
-.env.production
-
-# OS
-.DS_Store
-Thumbs.db
