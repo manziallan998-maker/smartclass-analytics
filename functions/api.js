@@ -1,36 +1,53 @@
 // Cloudflare Pages Function - handles API requests
 export async function onRequest(context) {
-    const { request, env } = context;
+    const { request } = context;
     const url = new URL(request.url);
-    const path = url.pathname.replace('/api', '');
+    const path = url.pathname;
     
     const headers = {
         'Access-Control-Allow-Origin': '*',
         'Content-Type': 'application/json'
     };
     
-    // Simple mock API - for demo login
-    if (path === '/login' && request.method === 'POST') {
+    // Handle preflight requests
+    if (request.method === 'OPTIONS') {
+        return new Response(null, { headers });
+    }
+    
+    // LOGIN endpoint
+    if (path === '/api/login' && request.method === 'POST') {
         const body = await request.json();
-        if (body.email === 'teacher@school.rw' && body.password === 'password123') {
+        const { email, password } = body;
+        
+        // Check credentials (simple demo - in production use real database)
+        if (email === 'teacher@school.rw' && password === 'password123') {
+            const token = btoa(JSON.stringify({ email, name: 'Teacher' }));
             return new Response(JSON.stringify({
                 success: true,
-                token: 'demo-token',
+                token: token,
                 name: 'Teacher'
             }), { headers });
         }
+        
         return new Response(JSON.stringify({
             success: false,
             message: 'Invalid credentials'
         }), { headers, status: 401 });
     }
     
-    if (path === '/signup' && request.method === 'POST') {
+    // SIGNUP endpoint
+    if (path === '/api/signup' && request.method === 'POST') {
+        const body = await request.json();
+        // In production, save to database here
         return new Response(JSON.stringify({
             success: true,
-            message: 'Account created'
+            message: 'Account created successfully'
         }), { headers });
     }
     
-    return new Response(JSON.stringify({ success: false, message: 'Not found' }), { headers, status: 404 });
+    // Default response for unknown endpoints
+    return new Response(JSON.stringify({
+        success: false,
+        message: 'Not found'
+    }), { headers, status: 404 });
 }
